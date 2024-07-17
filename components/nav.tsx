@@ -19,7 +19,7 @@ const GloveLogo = () => {
 export function Nav() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [visible, setVisible] = useState(true);
-  const { openMenu, setOpenMenu } = useDialog();
+  const { openNavMenu: openMenu, setOpenNavMenu: setOpenMenu } = useDialog();
 
   useEffect(() => {
     const handleScroll = () => {

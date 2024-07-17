@@ -3,20 +3,40 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface DialogContextType {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  openMenu: boolean;
-  setOpenMenu: (openMenu: boolean) => void;
+  openLoginScreen: boolean;
+  setOpenLoginScreen: (open: boolean) => void;
+  openNavMenu: boolean;
+  setOpenNavMenu: (openMenu: boolean) => void;
+  openExtensions: boolean;
+  setOpenExtensions: (openExtensions: boolean) => void;
+  openJoinGlove: boolean;
+  setOpenJoinGlove: (openJoinGlove: boolean) => void;
+  openVote: boolean;
+  setOpenVote: (openVote: boolean) => void;
 }
 
 const DialogContext = createContext<DialogContextType | undefined>(undefined);
 
 export const DialogProvider = ({ children }: { children: ReactNode; }) => {
-  const [openConnect, setOpenConnect] = useState(false);
+  const [openLoginScreen, setOpenLoginScreen] = useState(true);
   const [openNavMenu, setOpenNavMenu] = useState(false);
+  const [openExtensions, setOpenExtensions] = useState(false);
+  const [openJoinGlove, setOpenJoinGlove] = useState(false);
+  const [openVote, setOpenVote] = useState(false);
 
   return (
-    <DialogContext.Provider value={{ open: openConnect, setOpen: setOpenConnect, openMenu: openNavMenu, setOpenMenu: setOpenNavMenu }}>
+    <DialogContext.Provider value={{
+      openLoginScreen,
+      setOpenLoginScreen,
+      openNavMenu,
+      setOpenNavMenu,
+      openExtensions,
+      setOpenExtensions,
+      openJoinGlove,
+      setOpenJoinGlove,
+      openVote,
+      setOpenVote
+    }}>
       {children}
     </DialogContext.Provider>
   );

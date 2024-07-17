@@ -1,3 +1,5 @@
+'use client';
+
 import { Fraunces } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import './globals.css';
@@ -7,6 +9,13 @@ import Favicon32 from '../public/favicon/favicon-32x32.png';
 import Favicon16 from '../public/favicon/favicon-16x16.png';
 import { Nav } from '@/components/nav';
 import { DialogProvider } from '@/lib/providers/dialog';
+import { APP_NAME } from '@/lib/consts';
+import { extensionConfig } from '@/lib/extension-config';
+import { WalletAggregator } from '@polkadot-onboard/core';
+import { InjectedWalletProvider } from '@polkadot-onboard/injected-wallets';
+import { PolkadotWalletsContextProvider } from '@polkadot-onboard/react';
+import { ApiProvider } from '@/lib/providers/api';
+import { AccountProvider } from '@/lib/providers/account';
 
 interface LayoutProps {
   children: ReactNode;
@@ -25,6 +34,8 @@ const fontBody = Fraunces({
 });
 
 export default function Layout({ children }: LayoutProps) {
+  let injectedWalletProvider = new InjectedWalletProvider(extensionConfig, APP_NAME);
+  let walletAggregator = new WalletAggregator([injectedWalletProvider]);
   return (
     <html lang="en">
       <head>
@@ -39,14 +50,20 @@ export default function Layout({ children }: LayoutProps) {
           fontHeading.variable,
           fontBody.variable,
         )}>
-        <DialogProvider>
-          <div>
-            <Nav />
-            <div className="pt-[73px]">
-              {children}
-            </div>
-          </div>
-        </DialogProvider>
+        <ApiProvider>
+          <AccountProvider>
+            <PolkadotWalletsContextProvider walletAggregator={walletAggregator}>
+              <DialogProvider>
+                <div>
+                  <Nav />
+                  <div className="pt-[73px]">
+                    {children}
+                  </div>
+                </div>
+              </DialogProvider>
+            </PolkadotWalletsContextProvider>
+          </AccountProvider>
+        </ApiProvider>
       </body>
     </html>
   );
