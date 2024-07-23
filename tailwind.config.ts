@@ -76,6 +76,11 @@ const config: Config = {
       },
       spacing: {
         'scroll-padding': 'calc(100% - 16px)',
+      },
+      zIndex: {
+        '100': '100',
+        '150': '150',
+        '200': '200'
       }
     },
   },

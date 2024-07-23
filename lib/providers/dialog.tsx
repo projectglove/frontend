@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface DialogContextType {
   openLoginScreen: boolean;
@@ -9,10 +9,12 @@ interface DialogContextType {
   setOpenNavMenu: (openMenu: boolean) => void;
   openExtensions: boolean;
   setOpenExtensions: (openExtensions: boolean) => void;
-  openJoinGlove: boolean;
-  setOpenJoinGlove: (openJoinGlove: boolean) => void;
+  openGloveProxy: boolean;
+  setOpenGloveProxy: (openJoinGlove: boolean) => void;
   openVote: boolean;
   setOpenVote: (openVote: boolean) => void;
+  openLearnMore: boolean;
+  setOpenLearnMore: (openLearnMore: boolean) => void;
 }
 
 const DialogContext = createContext<DialogContextType | undefined>(undefined);
@@ -21,8 +23,9 @@ export const DialogProvider = ({ children }: { children: ReactNode; }) => {
   const [openLoginScreen, setOpenLoginScreen] = useState(true);
   const [openNavMenu, setOpenNavMenu] = useState(false);
   const [openExtensions, setOpenExtensions] = useState(false);
-  const [openJoinGlove, setOpenJoinGlove] = useState(false);
+  const [openGloveProxy, setOpenGloveProxy] = useState(false);
   const [openVote, setOpenVote] = useState(false);
+  const [openLearnMore, setOpenLearnMore] = useState(false);
 
   return (
     <DialogContext.Provider value={{
@@ -32,10 +35,12 @@ export const DialogProvider = ({ children }: { children: ReactNode; }) => {
       setOpenNavMenu,
       openExtensions,
       setOpenExtensions,
-      openJoinGlove,
-      setOpenJoinGlove,
+      openGloveProxy,
+      setOpenGloveProxy,
       openVote,
-      setOpenVote
+      setOpenVote,
+      openLearnMore,
+      setOpenLearnMore
     }}>
       {children}
     </DialogContext.Provider>

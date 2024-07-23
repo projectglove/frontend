@@ -1,11 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import GloveIcon from '../public/glove.png';
 import Image from "next/image";
 import { useDialog } from "@/lib/providers/dialog";
 import { useEffect, useState } from "react";
+import { useAccounts } from "@/lib/providers/account";
+import ConnectWallet from "./connect-wallet";
+import dynamic from "next/dynamic";
+
+// const ConnectWallet = dynamic(() => import('./connect-wallet'), { ssr: false });
 
 const GloveLogo = () => {
   return (
@@ -16,45 +21,55 @@ const GloveLogo = () => {
   );
 };
 
-export function Nav() {
+export default function Nav() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [visible, setVisible] = useState(true);
-  const { openNavMenu: openMenu, setOpenNavMenu: setOpenMenu } = useDialog();
+  const { openNavMenu, setOpenNavMenu, setOpenGloveProxy } = useDialog();
+  const { currentProxy } = useAccounts();
 
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      setVisible(lastScrollY > currentScrollY || currentScrollY < 10);
-      setLastScrollY(currentScrollY);
-    };
+    if (typeof window !== "undefined") {
+      const handleScroll = () => {
+        const currentScrollY = window.scrollY;
+        setVisible(lastScrollY > currentScrollY || currentScrollY < 10);
+        setLastScrollY(currentScrollY);
+      };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+      window.addEventListener('scroll', handleScroll, { passive: true });
 
-    return () => window.removeEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
   }, [lastScrollY]);
 
-  const LINKS = <div className="flex flex-col sm:flex-row sm:justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-    <Button variant="outline" className="px-4 py-2 rounded-md">
-      John Smith, 0x...1234
-    </Button>
-    <Button variant="outline" className="px-4 py-2 rounded-md">
-      Docs
-    </Button>
-    <Button
-      variant="secondary"
-      className="px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary-foreground hover:text-secondary font-bold">
-      Join Glove
-    </Button>
-  </div>;
+  const handleJoinGlove = () => {
+    setOpenGloveProxy(true);
+  };
+
+  const Links = () => {
+    return (
+      <div className="flex flex-col md:flex-row sm:justify-center space-y-4 md:space-y-0 md:space-x-4">
+        <ConnectWallet />
+        <Button variant="outline" className="px-4 py-2 rounded-md">
+          Docs
+        </Button>
+        <Button
+          onClick={handleJoinGlove}
+          variant="secondary"
+          className="px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary-foreground hover:text-secondary font-bold">
+          {currentProxy ? 'Exit Glove' : 'Join Glove'}
+        </Button>
+      </div>
+    );
+  };
 
   return (
     <nav className={`fixed bg-background top-0 left-0 right-0 transition-transform duration-300 ${ visible ? 'translate-y-0' : '-translate-y-full' } z-50 flex items-center justify-between p-4 border-b`}>
       <GloveLogo />
       <div className="hidden md:flex space-x-4">
-        {LINKS}
+        <Links />
       </div>
       <div className="md:hidden">
-        <Dialog open={openMenu} onOpenChange={setOpenMenu}>
+        <Dialog open={openNavMenu} onOpenChange={setOpenNavMenu}>
           <DialogTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-md">
               <MenuIcon className="w-6 h-6" />
@@ -66,7 +81,12 @@ export function Nav() {
                 <DialogHeader className="flex justify-between items-center">
                   <DialogTitle className="text-xl font-bold mb-4"><GloveLogo /></DialogTitle>
                 </DialogHeader>
-                {LINKS}
+                <Links />
+                <DialogFooter className="mt-4">
+                  <Button variant="ghost" className="px-4 py-2 rounded-md w-full" onClick={() => setOpenNavMenu(false)}>
+                    Close
+                  </Button>
+                </DialogFooter>
               </div>
             </div>
           </DialogContent>

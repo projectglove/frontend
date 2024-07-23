@@ -31,3 +31,20 @@ export interface TrackConfig {
 }
 
 export type TrackEntry = [number, TrackConfig];
+
+export interface ExtensionConfig {
+  disallowed: string[];
+  supported: Array<{
+    id: string;
+    title: string;
+    description: string;
+    urls: {
+      main: string;
+      browsers: {
+        chrome: string;
+        firefox: string;
+      };
+    };
+    iconUrl: string;
+  }>;
+}

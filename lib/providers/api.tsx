@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { PROD_WSS, TEST_WSS } from '../consts';
 
 const ApiContext = createContext<ApiPromise | null>(null);
 
@@ -8,7 +9,7 @@ const ApiProvider = ({ children }: { children: React.ReactNode; }) => {
 
   useEffect(() => {
     const setupApi = async () => {
-      const provider = new WsProvider('wss://rococo-rpc.polkadot.io');
+      const provider = new WsProvider(TEST_WSS);
       try {
         const api = await ApiPromise.create({ provider, noInitWarn: true });
         setApi(api);
@@ -20,9 +21,7 @@ const ApiProvider = ({ children }: { children: React.ReactNode; }) => {
     setupApi();
 
     return () => {
-      if (api) {
-        api.disconnect();
-      }
+      api?.disconnect();
     };
   }, []);
 

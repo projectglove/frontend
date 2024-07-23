@@ -59,7 +59,10 @@ export function ReferendumList() {
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2 relative">
         <h1 className="text-2xl font-bold">Active Treasury Refs</h1>
         <div className="flex items-center justify-center space-x-2 flex-wrap gap-2">
-          <FilterIcon className="w-5 h-5" />
+          <div className="flex items-center justify-center gap-2">
+            <FilterIcon className="w-5 h-5" />
+            <span className="sr-only">Filter</span>
+          </div>
           <Button
             variant={filter === "all" ? "default" : "outline"}
             onClick={() => setFilter("all")}
@@ -87,7 +90,7 @@ export function ReferendumList() {
         {filteredData.map((ref, index) => (
           <div
             key={ref}
-            className={`border-b pb-4 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 ${ index % 2 === 0 ? 'bg-background' : 'bg-secondary/20' } ${ index === filteredData.length - 1 ? "border-b-0" : "" }`}
+            className={`border-b pb-4 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 ${ index % 2 === 0 ? 'bg-background' : 'bg-secondary/30' } ${ index === filteredData.length - 1 ? "border-b-0" : "" }`}
           >
             <div className="flex flex-col items-start">
               <div className="bg-muted flex items-center justify-center rounded-md p-2 flex-shrink-0 gap-2">
@@ -95,7 +98,7 @@ export function ReferendumList() {
                   href="#"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-bold text-muted-foreground hover:underline flex items-center gap-1"
+                  className="text-sm font-bold text-muted-foreground underline-offset-2 hover:underline flex items-center gap-1"
                 >
                   <span>Ref #{ref.toString().padStart(3, "0")}</span>
                   <ExternalLinkIcon className="w-3 h-3" />
@@ -107,7 +110,7 @@ export function ReferendumList() {
                   {ref % 3 === 0 ? "Anonymized" : "Not Anonymized"}
                 </div>
                 <div
-                  className={`px-2 py-1 rounded-md text-xs font-medium ${ ref % 2 === 0 ? "border border-green-500 text-green-500" : "border border-red-500 text-red-500"
+                  className={`px-2 py-1 rounded-md text-xs font-medium ${ ref % 2 === 0 ? "border border-emerald-400 text-emerald-400" : "border border-red-500 text-red-500"
                     }`}
                 >
                   {ref % 2 === 0 ? "Voted" : "Not Voted"}
@@ -119,8 +122,8 @@ export function ReferendumList() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 col-span-2">
               <div>
-                <label className="block text-xs font-medium mb-1 text-muted-foreground">
-                  Direction <span className="text-muted-foreground">(Aye/Nay/Abstain)</span>
+                <label className="block text-xs font-medium mb-1 text-emerald-500">
+                  Direction <span className="text-gray-300">(Aye/Nay/Abstain)</span>
                 </label>
                 <Select>
                   <SelectTrigger className="w-full">
@@ -134,8 +137,8 @@ export function ReferendumList() {
                 </Select>
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1 text-muted-foreground">
-                  Amount <span className="text-muted-foreground">(KSM)</span>
+                <label className="block text-xs font-medium mb-1 text-emerald-500">
+                  Amount <span className="text-gray-300">(KSM)</span>
                 </label>
                 <Input
                   type="number"
@@ -148,8 +151,8 @@ export function ReferendumList() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1 text-muted-foreground">
-                  Multiplier <span className="text-muted-foreground">(.1x - 6x)</span>
+                <label className="block text-xs font-medium mb-1 text-emerald-400">
+                  Multiplier <span className="text-gray-300">(.1x - 6x)</span>
                 </label>
                 <Input
                   type="number"

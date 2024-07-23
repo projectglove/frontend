@@ -1,4 +1,6 @@
-export const extensionConfig = {
+import { ExtensionConfig } from "./types";
+
+export const extensionConfig: Partial<ExtensionConfig> = {
   disallowed: [],
   supported: [
     {

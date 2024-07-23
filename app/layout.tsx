@@ -3,19 +3,19 @@
 import { Fraunces } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import './globals.css';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import AppleTouchIcon from '../public/favicon/apple-touch-icon.png';
 import Favicon32 from '../public/favicon/favicon-32x32.png';
 import Favicon16 from '../public/favicon/favicon-16x16.png';
-import { Nav } from '@/components/nav';
+import Nav from '@/components/nav';
 import { DialogProvider } from '@/lib/providers/dialog';
-import { APP_NAME } from '@/lib/consts';
-import { extensionConfig } from '@/lib/extension-config';
-import { WalletAggregator } from '@polkadot-onboard/core';
-import { InjectedWalletProvider } from '@polkadot-onboard/injected-wallets';
-import { PolkadotWalletsContextProvider } from '@polkadot-onboard/react';
 import { ApiProvider } from '@/lib/providers/api';
-import { AccountProvider } from '@/lib/providers/account';
+import { AccountProvider, useAccounts } from '@/lib/providers/account';
+import { SnackbarProvider } from '@/lib/providers/snackbar';
+import Footer from '@/components/footer';
+import LearnMore from '@/components/learn-more';
+import dynamic from 'next/dynamic';
+import AccountSelector from '@/components/account-selector';
 
 interface LayoutProps {
   children: ReactNode;
@@ -33,9 +33,10 @@ const fontBody = Fraunces({
   variable: '--font-body',
 });
 
+const GloveProxy = dynamic(() => import('../components/glove-proxy'), { ssr: false });
+// const Nav = dynamic(() => import('../components/nav'), { ssr: false });
+
 export default function Layout({ children }: LayoutProps) {
-  let injectedWalletProvider = new InjectedWalletProvider(extensionConfig, APP_NAME);
-  let walletAggregator = new WalletAggregator([injectedWalletProvider]);
   return (
     <html lang="en">
       <head>
@@ -50,19 +51,28 @@ export default function Layout({ children }: LayoutProps) {
           fontHeading.variable,
           fontBody.variable,
         )}>
+        <noscript>
+          <div className="bg-primary text-foreground p-4 text-center">
+            This website requires JavaScript to function properly. Please enable JavaScript in your browser settings.
+          </div>
+        </noscript>
         <ApiProvider>
-          <AccountProvider>
-            <PolkadotWalletsContextProvider walletAggregator={walletAggregator}>
-              <DialogProvider>
+          <DialogProvider>
+            <AccountProvider>
+              <SnackbarProvider>
                 <div>
+                  <GloveProxy />
+                  <LearnMore />
+                  <AccountSelector />
                   <Nav />
                   <div className="pt-[73px]">
                     {children}
                   </div>
+                  <Footer />
                 </div>
-              </DialogProvider>
-            </PolkadotWalletsContextProvider>
-          </AccountProvider>
+              </SnackbarProvider>
+            </AccountProvider>
+          </DialogProvider>
         </ApiProvider>
       </body>
     </html>

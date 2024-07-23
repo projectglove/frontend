@@ -39,15 +39,15 @@ const DialogContent = React.forwardRef<
       ref={ref}
       aria-describedby={props['aria-describedby']}
       className={cn(
-        "fixed z-50 bg-transparent p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        "fixed z-50 bg-transparent p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 flex flex-col",
         className
       )}
       {...props}
     >
       {children}
-      <DialogClose className="absolute right-4 top-4 flex flex-row items-center justify-center gap-1">
+      <DialogClose className="absolute right-4 top-4 flex flex-row items-center justify-center gap-1 opacity-70 hover:opacity-100 transition-opacity p-2 cursor-glove">
         <span className="text-xs">Close</span>
-        <div className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+        <div className="rounded-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
           <X className="h-4 w-4" />
         </div>
       </DialogClose>
