@@ -27,7 +27,7 @@ export default function LearnMore() {
               </div>
               <DialogFooter className="mt-4">
                 <Button variant="ghost" className="px-4 py-2 rounded-md w-full" onClick={() => setOpenLearnMore(false)}>
-                  Close
+                  Cancel
                 </Button>
               </DialogFooter>
             </div>

@@ -1,21 +1,13 @@
 'use client';
 
-import { memo, useEffect, useRef, useState } from 'react';
-import Wallet from './wallet';
+import { useEffect, useRef } from 'react';
 import { useAccounts } from '@/lib/providers/account';
 import AccountBox from './account-box';
-import { useApi } from '@/lib/providers/api';
-import { InjectedAccountWithMeta, InjectedExtension } from '@polkadot/extension-inject/types';
-import dynamic from 'next/dynamic';
-import Cookies from 'js-cookie';
-import { APP_NAME } from '@/lib/consts';
-import { web3Enable } from '@polkadot/extension-dapp';
-
-// const Wallet = dynamic(() => import('./wallet'), { ssr: false });
+import { InjectedExtension } from '@polkadot/extension-inject/types';
+import Wallet from './wallet';
 
 export default function Wallets() {
-  const { accounts, extensions, selectedExtension: activeWallet, selectedAccount: activeAccount, setExtensions } = useAccounts();
-  const [storedWallets, setStoredWallets] = useState<InjectedExtension[]>([]);
+  const { accounts, extensions, selectedExtension: activeWallet, selectedAccount: activeAccount } = useAccounts();
   const activeAccountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

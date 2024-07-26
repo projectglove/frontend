@@ -16,6 +16,7 @@ import Footer from '@/components/footer';
 import LearnMore from '@/components/learn-more';
 import dynamic from 'next/dynamic';
 import AccountSelector from '@/components/account-selector';
+import ConfirmVote from '@/components/confirm-vote';
 
 interface LayoutProps {
   children: ReactNode;
@@ -61,6 +62,7 @@ export default function Layout({ children }: LayoutProps) {
             <AccountProvider>
               <SnackbarProvider>
                 <div>
+                  <ConfirmVote />
                   <GloveProxy />
                   <LearnMore />
                   <AccountSelector />

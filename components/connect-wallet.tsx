@@ -10,7 +10,7 @@ import { APP_NAME, TEST_SS58_FORMAT } from "@/lib/consts";
 import Cookies from "js-cookie";
 
 export default function ConnectWallet() {
-  const { openExtensions, setOpenExtensions } = useDialog();
+  const { setOpenExtensions } = useDialog();
   const { selectedAccount: activeAccount, setAccounts, setExtensions, extensions, selectedExtension } = useAccounts();
   const [currentAddress, setCurrentAddress] = useState<string | null>(null);
 

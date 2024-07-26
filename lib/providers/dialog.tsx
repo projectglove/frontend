@@ -1,22 +1,35 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { Conviction, PreferredDirection, ReferendumData, ReferendumDialogProps } from '../types';
 
-interface DialogContextType {
+interface DialogStateType {
   openLoginScreen: boolean;
-  setOpenLoginScreen: (open: boolean) => void;
   openNavMenu: boolean;
-  setOpenNavMenu: (openMenu: boolean) => void;
   openExtensions: boolean;
-  setOpenExtensions: (openExtensions: boolean) => void;
   openGloveProxy: boolean;
-  setOpenGloveProxy: (openJoinGlove: boolean) => void;
   openVote: boolean;
-  setOpenVote: (openVote: boolean) => void;
   openLearnMore: boolean;
-  setOpenLearnMore: (openLearnMore: boolean) => void;
+  openReferendumDialog: boolean;
+  referendum: ReferendumDialogProps | null;
+  amounts: (number | string)[];
+  multipliers: Conviction[];
+  directions: PreferredDirection[];
 }
 
+interface DialogActionType {
+  setOpenLoginScreen: (open: boolean) => void;
+  setOpenNavMenu: (openMenu: boolean) => void;
+  setOpenExtensions: (openExtensions: boolean) => void;
+  setOpenGloveProxy: (openJoinGlove: boolean) => void;
+  setOpenVote: (openVote: boolean) => void;
+  setOpenLearnMore: (openLearnMore: boolean) => void;
+  setOpenReferendumDialog: (openReferendumDialog: boolean) => void;
+  setReferendum: (referendum: ReferendumDialogProps | null) => void;
+  setVotingOptions: (amounts: (number | string)[], multipliers: Conviction[], directions: PreferredDirection[]) => void;
+}
+
+type DialogContextType = DialogStateType & DialogActionType;
 const DialogContext = createContext<DialogContextType | undefined>(undefined);
 
 export const DialogProvider = ({ children }: { children: ReactNode; }) => {
@@ -26,6 +39,17 @@ export const DialogProvider = ({ children }: { children: ReactNode; }) => {
   const [openGloveProxy, setOpenGloveProxy] = useState(false);
   const [openVote, setOpenVote] = useState(false);
   const [openLearnMore, setOpenLearnMore] = useState(false);
+  const [openReferendumDialog, setOpenReferendumDialog] = useState<boolean>(false);
+  const [referendum, setReferendum] = useState<ReferendumDialogProps | null>(null);
+  const [amounts, setAmounts] = useState<(number | string)[]>([]);
+  const [multipliers, setMultipliers] = useState<Conviction[]>([]);
+  const [directions, setDirections] = useState<PreferredDirection[]>([]);
+
+  const setVotingOptions = (amounts: (number | string)[], multipliers: Conviction[], directions: PreferredDirection[]) => {
+    setAmounts(amounts);
+    setMultipliers(multipliers);
+    setDirections(directions);
+  };
 
   return (
     <DialogContext.Provider value={{
@@ -40,7 +64,15 @@ export const DialogProvider = ({ children }: { children: ReactNode; }) => {
       openVote,
       setOpenVote,
       openLearnMore,
-      setOpenLearnMore
+      setOpenLearnMore,
+      openReferendumDialog,
+      setOpenReferendumDialog,
+      referendum,
+      setReferendum,
+      amounts,
+      multipliers,
+      directions,
+      setVotingOptions
     }}>
       {children}
     </DialogContext.Provider>

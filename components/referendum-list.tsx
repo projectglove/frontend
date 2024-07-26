@@ -1,40 +1,65 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { getReferendaList, getReferendumTracks } from "@/lib/utils";
+import { getReferendaList } from "@/lib/utils";
+import VotingOptions from "./voting-options";
+import { useDialog } from "@/lib/providers/dialog";
+import { Conviction, PreferredDirection, ReferendumData } from "@/lib/types";
+import { useAccounts } from "@/lib/providers/account";
 
 export function ReferendumList() {
   const [filter, setFilter] = useState("all");
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [amounts, setAmounts] = useState([0, 0, 0, 0, 0]);
-  const [multipliers, setMultipliers] = useState([1, 1, 1, 1, 1]);
-  const filteredData = useMemo(() => {
-    switch (filter) {
-      case "voted":
-        return [1, 2, 3, 4, 5].filter((ref) => ref % 2 === 0);
-      case "not-voted":
-        return [1, 2, 3, 4, 5].filter((ref) => ref % 2 !== 0);
-      default:
-        return [1, 2, 3, 4, 5];
-    }
-  }, [filter]);
+  const [amounts, setAmounts] = useState<(number | string)[]>([]);
+  const [multipliers, setMultipliers] = useState<Conviction[]>([]);
+  const [referenda, setReferenda] = useState<ReferendumData[]>([]);
+  const [preferredDirection, setPreferredDirection] = useState<PreferredDirection[]>([]);
+  const { setOpenReferendumDialog, setReferendum, setVotingOptions, openReferendumDialog } = useDialog();
+  const { currentNetwork } = useAccounts();
+
   useEffect(() => {
     const load = async () => {
       const data = await getReferendaList();
-      // const tracks = await getReferendumTracks();
+      if (data) {
+        const treasuryRefs = data.filter(ref => ref.call_module.includes('Treasury') && ref.status.includes('Submitted'));
+        setReferenda(treasuryRefs);
+        setAmounts(Array.from({ length: treasuryRefs.length }, () => 0));
+      }
       console.log({ data });
     };
     load();
   }, []);
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeRemaining((prevTime) => prevTime - 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    setVotingOptions(amounts, multipliers, preferredDirection);
+  }, [amounts, multipliers, preferredDirection]);
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setTimeRemaining((prevTime) => prevTime - 1);
+  //   }, 1000);
+  //   return () => clearInterval(interval);
+  // }, []);
+
+  const filteredData = useMemo(() => {
+    let data = [];
+    switch (filter) {
+      case "voted":
+        data = referenda.filter(ref => parseInt(ref.approval_rate) > 50);
+        break;
+      case "not-voted":
+        data = referenda.filter(ref => parseInt(ref.approval_rate) <= 50);
+        break;
+      default:
+        data = referenda.filter(ref => parseInt(ref.approval_rate) <= 50);
+    }
+    return data.sort((a, b) => b.referendum_index - a.referendum_index);
+  }, [filter, referenda]);
+  const memoizedAmounts = useMemo(() => amounts, [amounts]);
+  const memoizedMultipliers = useMemo(() => multipliers, [multipliers]);
+  const memoizedPreferredDirection = useMemo(() => preferredDirection, [preferredDirection]);
+
   const formatTimeRemaining = () => {
     const days = Math.floor(timeRemaining / (24 * 60 * 60));
     const hours = Math.floor((timeRemaining % (24 * 60 * 60)) / (60 * 60));
@@ -43,17 +68,42 @@ export function ReferendumList() {
     return `${ days }d ${ hours }h ${ minutes }m ${ seconds }s`;
   };
   const handleAmountChange = (index: number, value: string) => {
-    const newValue = Math.max(0, parseFloat(value));
-    const newAmounts = [...amounts];
-    newAmounts[index] = newValue;
-    setAmounts(newAmounts);
+    if (value === '') {
+      const newAmounts = [...amounts];
+      newAmounts[index] = value;
+      setAmounts(newAmounts);
+    } else if (!isNaN(parseFloat(value))) {
+      const newValue = Math.max(0, parseFloat(value));
+      const newAmounts = [...amounts];
+      newAmounts[index] = newValue;
+      setAmounts(newAmounts);
+    } else {
+      console.error("Invalid input for amount");
+    }
   };
-  const handleMultiplierChange = (index: number, value: string) => {
-    const newValue = Math.max(0.1, Math.min(6, parseFloat(value)));
-    const newMultipliers = [...multipliers];
-    newMultipliers[index] = newValue;
-    setMultipliers(newMultipliers);
+  const handleMultiplierChange = (index: number, value: Conviction | '') => {
+    if (value === '') {
+      const newMultipliers = [...multipliers];
+      newMultipliers[index] = Conviction.None;
+      setMultipliers(newMultipliers);
+    } else {
+      const newMultipliers = [...multipliers];
+      newMultipliers[index] = value;
+      setMultipliers(newMultipliers);
+    }
   };
+  const handlePreferredDirectionChange = (index: number, value: PreferredDirection) => {
+    console.log('preferredDirection', { index, value });
+    const newPreferredDirection = [...preferredDirection];
+    newPreferredDirection[index] = value;
+    setPreferredDirection(newPreferredDirection);
+  };
+  const handleOpenReferendumDialog = (index: number, referendumNumber: number, confirmVote: ReactNode) => {
+    setReferendum(null);
+    setOpenReferendumDialog(true);
+    setReferendum({ index, referendumNumber, confirmVote });
+  };
+
   return (
     <div className="p-4 h-scroll-73 flex flex-col">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2 relative">
@@ -86,89 +136,62 @@ export function ReferendumList() {
           </Button>
         </div>
       </div>
-      <div className="border rounded-md overflow-auto">
-        {filteredData.map((ref, index) => (
-          <div
-            key={ref}
-            className={`border-b pb-4 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 ${ index % 2 === 0 ? 'bg-background' : 'bg-secondary/30' } ${ index === filteredData.length - 1 ? "border-b-0" : "" }`}
-          >
-            <div className="flex flex-col items-start">
-              <div className="bg-muted flex items-center justify-center rounded-md p-2 flex-shrink-0 gap-2">
-                <a
-                  href="#"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-bold text-muted-foreground underline-offset-2 hover:underline flex items-center gap-1"
-                >
-                  <span>Ref #{ref.toString().padStart(3, "0")}</span>
-                  <ExternalLinkIcon className="w-3 h-3" />
-                </a>
-                {/* {ref % 2 !== 0 && <Button className="ml-auto">Update Vote</Button>} */}
+      <div className={filteredData.length > 0 ? "border rounded-md overflow-auto" : "border-0 rounded-md overflow-auto"}>
+        {filteredData.map((ref, index) => {
+          const ConfirmVote = () =>
+            <VotingOptions
+              key={index}
+              index={index}
+              amounts={memoizedAmounts.filter((_, i) => i !== index)}
+              multipliers={memoizedMultipliers.filter((_, i) => i !== index)}
+              preferredDirection={memoizedPreferredDirection.filter((_, i) => i !== index)}
+              handlePreferredDirectionChange={handlePreferredDirectionChange}
+              handleAmountChange={handleAmountChange}
+              handleMultiplierChange={handleMultiplierChange}
+            />;
+
+          return (
+            <div
+              key={index}
+              className={`border-b pb-4 grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 p-4 ${ index % 2 === 0 ? 'bg-background' : 'bg-secondary/30' } ${ index === filteredData.length - 1 ? "border-b-0" : "" }`}
+            >
+              <div className="flex flex-col items-start">
+                <div className="bg-muted flex items-center justify-center rounded-md p-2 flex-shrink-0 gap-2">
+                  <a
+                    href={`https://${ currentNetwork }.polkassembly.io/referenda/${ ref.referendum_index }`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-bold text-muted-foreground underline-offset-2 hover:underline flex items-center gap-1"
+                  >
+                    <span>Ref #{ref.referendum_index.toString().padStart(3, "0")}</span>
+                    <ExternalLinkIcon className="w-3 h-3" />
+                  </a>
+                  {/* {ref % 2 !== 0 && <Button className="ml-auto">Update Vote</Button>} */}
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="px-2 py-1 rounded-md bg-muted text-muted-foreground text-xs font-medium">
+                    {/* {index % 3 === 0 ? "Anonymized" : "Not Anonymized"} */}
+                    Anonymized
+                  </div>
+                  <div
+                    className={`px-2 py-1 rounded-md text-xs font-medium ${ index % 2 === 0 ? "border border-emerald-400 text-emerald-400" : "border border-red-500 text-red-500"
+                      }`}
+                  >
+                    {index % 2 === 0 ? "Voted" : "Not Voted"}
+                  </div>
+                  <div className="px-2 py-1 rounded-md bg-muted text-muted-foreground text-xs font-medium">
+                    {timeRemaining <= 0 ? "Ref Ended" : formatTimeRemaining()}
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                <div className="px-2 py-1 rounded-md bg-muted text-muted-foreground text-xs font-medium">
-                  {ref % 3 === 0 ? "Anonymized" : "Not Anonymized"}
-                </div>
-                <div
-                  className={`px-2 py-1 rounded-md text-xs font-medium ${ ref % 2 === 0 ? "border border-emerald-400 text-emerald-400" : "border border-red-500 text-red-500"
-                    }`}
-                >
-                  {ref % 2 === 0 ? "Voted" : "Not Voted"}
-                </div>
-                <div className="px-2 py-1 rounded-md bg-muted text-muted-foreground text-xs font-medium">
-                  {timeRemaining <= 0 ? "Ref Ended" : formatTimeRemaining()}
+              <div className="hover:bg-muted/50 transition-colors rounded-md hover:cursor-glove" onClick={() => handleOpenReferendumDialog(index, ref.referendum_index, <ConfirmVote />)}>
+                <div className="pointer-events-none">
+                  <ConfirmVote />
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 col-span-2">
-              <div>
-                <label className="block text-xs font-medium mb-1 text-emerald-500">
-                  Direction <span className="text-gray-300">(Aye/Nay/Abstain)</span>
-                </label>
-                <Select>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={ref % 2 === 0 ? "Aye" : "Nay"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="aye">Aye</SelectItem>
-                    <SelectItem value="nay">Nay</SelectItem>
-                    <SelectItem value="abstain">Abstain</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1 text-emerald-500">
-                  Amount <span className="text-gray-300">(KSM)</span>
-                </label>
-                <Input
-                  type="number"
-                  value={amounts[index]}
-                  onChange={(e) => handleAmountChange(index, e.target.value)}
-                  className="w-full"
-                  required
-                  min={0}
-                  pattern="[0-9]*"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1 text-emerald-400">
-                  Multiplier <span className="text-gray-300">(.1x - 6x)</span>
-                </label>
-                <Input
-                  type="number"
-                  value={multipliers[index]}
-                  onChange={(e) => handleMultiplierChange(index, e.target.value)}
-                  className="w-full"
-                  required
-                  min={0.1}
-                  max={6}
-                  step={0.1}
-                  pattern="[0-9]+(.[0-9]+)?"
-                />
-              </div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

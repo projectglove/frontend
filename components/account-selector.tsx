@@ -4,9 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { useDialog } from "@/lib/providers/dialog";
 import Wallets from "./wallets";
-import { useAccounts } from "@/lib/providers/account";
-import { APP_NAME } from "@/lib/consts";
-import { web3Enable } from "@polkadot/extension-dapp";
 
 export default function AccountSelector() {
   const { openExtensions, setOpenExtensions } = useDialog();
@@ -23,7 +20,7 @@ export default function AccountSelector() {
               <Wallets />
               <DialogFooter className="mt-4">
                 <Button variant="ghost" className="px-4 py-2 rounded-md w-full" onClick={() => setOpenExtensions(false)}>
-                  Close
+                  Cancel
                 </Button>
               </DialogFooter>
             </div>

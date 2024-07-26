@@ -98,7 +98,7 @@ export default function GloveProxy() {
     <Dialog open={openGloveProxy} onOpenChange={setOpenGloveProxy}>
       <div className="join-dialog flex justify-center">
         <DialogContent className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.8)] backdrop-blur-sm">
-          <div className="bg-background rounded-lg border-2 border-secondary p-6 flex items-center justify-center m-6">
+          <div className="bg-background rounded-lg border-2 border-secondary p-6 m-6">
             <div>
               <DialogHeader className="flex justify-between items-center">
                 <DialogTitle className="text-xl font-bold mb-4">{hasJoined ? 'Sad to see you go' : 'How to join Glove'}</DialogTitle>
@@ -114,9 +114,9 @@ export default function GloveProxy() {
                   {hasJoined ? "Exit Glove" : "Join Glove"}
                 </Button>
               </div>
-              <DialogFooter className="mt-4">
+              <DialogFooter>
                 <Button variant="ghost" className="px-4 py-2 rounded-md w-full" onClick={() => setOpenGloveProxy(false)}>
-                  Close
+                  Cancel
                 </Button>
               </DialogFooter>
             </div>

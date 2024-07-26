@@ -11,6 +11,7 @@ type AccountState = {
   selectedExtension: InjectedExtension | null;
   currentProxy: string | null;
   gloveProxy: string | null;
+  currentNetwork: string | null;
 };
 
 type AccountContextType = AccountState & {
@@ -19,6 +20,7 @@ type AccountContextType = AccountState & {
   setSelectedAccount: (account: InjectedAccountWithMeta | null) => void;
   setSelectedExtension: (extension: InjectedExtension | null) => void;
   setCurrentProxy: (proxy: string | null) => void;
+  setCurrentNetwork: (network: string | null) => void;
 };
 
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
@@ -29,6 +31,7 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
   const [selectedAccount, setSelectedAccountState] = useState<InjectedAccountWithMeta | null>(null);
   const [selectedExtension, setSelectedExtensionState] = useState<InjectedExtension | null>(null);
   const [currentProxy, setCurrentProxyState] = useState<string | null>(null);
+  const [currentNetwork, setCurrentNetworkState] = useState<string | null>(null);
   const [gloveProxy, setGloveProxyState] = useState<string | null>(null);
   const api = useApi();
   const { openGloveProxy } = useDialog();
@@ -54,8 +57,14 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
             throw new Error('Failed to fetch proxy account information');
           }
           const data = await response.json();
-          console.log('Current Glove Proxy address', data.proxy_account);
-          setGloveProxyState(data.proxy_account);
+
+          if ('proxy_account' in data && data.proxy_account) {
+            setGloveProxyState(data.proxy_account);
+          }
+
+          if ('network_name' in data && data.network_name) {
+            setCurrentNetworkState(data.network_name);
+          }
         } catch (error) {
           console.error('Error fetching proxy account:', error);
         }
@@ -123,6 +132,10 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     }
   };
 
+  const setCurrentNetwork = (network: string | null) => {
+    setCurrentNetworkState(network);
+  };
+
   const providerValue = useMemo(() => ({
     accounts,
     extensions,
@@ -134,8 +147,10 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     setSelectedExtension,
     currentProxy,
     setCurrentProxy,
-    gloveProxy
-  }), [accounts, extensions, selectedAccount, selectedExtension, currentProxy, gloveProxy]);
+    gloveProxy,
+    currentNetwork,
+    setCurrentNetwork
+  }), [accounts, extensions, selectedAccount, selectedExtension, currentProxy, gloveProxy, currentNetwork]);
 
   return (
     <AccountContext.Provider value={providerValue}>

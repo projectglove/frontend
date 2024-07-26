@@ -1,11 +1,12 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { ReferendumData } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export async function getReferendaList(): Promise<any> {
+export async function getReferendaList(): Promise<ReferendumData[]> {
   const SUBSCAN_API_KEY = process.env.NEXT_PUBLIC_SUBSCAN_API_KEY;
   if (!SUBSCAN_API_KEY) {
     throw new Error("SUBSCAN_API_KEY is not set");
@@ -27,15 +28,15 @@ export async function getReferendaList(): Promise<any> {
     body,
   };
 
-  let data;
+  let result;
   try {
     const response = await fetch("https://rococo.api.subscan.io/api/scan/referenda/referendums", requestOptions);
-    data = await response.json();
+    result = await response.json();
   } catch (error) {
     console.error("Error fetching referenda list:", error);
   }
 
-  return data;
+  return result.data.list;
 }
 
 export async function getReferendumTracks(): Promise<any> {
