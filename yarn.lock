@@ -375,7 +375,7 @@
     "@polkadot/x-global" "^13.0.2"
     tslib "^2.6.2"
 
-"@polkadot/keyring@^13.0.2":
+"@polkadot/keyring@*", "@polkadot/keyring@^13.0.2":
   version "13.0.2"
   resolved "https://registry.yarnpkg.com/@polkadot/keyring/-/keyring-13.0.2.tgz#05a655eb06c965ae5ee5f181d25916797ea50849"
   integrity sha512-NeLbhyKDT5W8LI9seWTZGePxNTOVpDhv2018HSrEDwJq9Ie0C4TZhUf3KNERCkSveuThXjfQJMs+1CF33ZXPWw==
@@ -384,7 +384,7 @@
     "@polkadot/util-crypto" "13.0.2"
     tslib "^2.6.2"
 
-"@polkadot/networks@13.0.2", "@polkadot/networks@^13.0.2":
+"@polkadot/networks@*", "@polkadot/networks@13.0.2", "@polkadot/networks@^13.0.2":
   version "13.0.2"
   resolved "https://registry.yarnpkg.com/@polkadot/networks/-/networks-13.0.2.tgz#0f8fc896b8fb2141212b6448739f4a00bc72b29c"
   integrity sha512-ABAL+vug/gIwkdFEzeh87JoJd0YKrxSYg/HjUrZ+Zis2ucxQEKpvtCpJ34ku+YrjacBfVqIAkkwd3ZdIPGq9aQ==
@@ -512,6 +512,31 @@
     "@polkadot/util" "^13.0.2"
     "@polkadot/util-crypto" "^13.0.2"
     rxjs "^7.8.1"
+    tslib "^2.6.2"
+
+"@polkadot/ui-keyring@^3.8.2":
+  version "3.8.2"
+  resolved "https://registry.yarnpkg.com/@polkadot/ui-keyring/-/ui-keyring-3.8.2.tgz#2755afe91b047634b74aefe3d1e78f0c32a5c5fe"
+  integrity sha512-LkDl7gmGxAcNPCE00ELJ9O/ii7NBiTRLYdtxNd+Lshc0SbzCCIApxTG1fkT70tFKJrLyyUyGPWLJ4eeEvGtuNg==
+  dependencies:
+    "@polkadot/keyring" "^13.0.2"
+    "@polkadot/ui-settings" "3.8.2"
+    "@polkadot/util" "^13.0.2"
+    "@polkadot/util-crypto" "^13.0.2"
+    mkdirp "^3.0.1"
+    rxjs "^7.8.1"
+    store "^2.0.12"
+    tslib "^2.6.2"
+
+"@polkadot/ui-settings@*", "@polkadot/ui-settings@3.8.2":
+  version "3.8.2"
+  resolved "https://registry.yarnpkg.com/@polkadot/ui-settings/-/ui-settings-3.8.2.tgz#f1193e4403ccf61a13ef06cdb2827ee52134233e"
+  integrity sha512-fxOLnep0RctIwWII4zwaf/KeEuB/+urd4Ep+Hd5YXmAaMWjGp+NH3DJ/R0/bAJD/tQH+hHwNnGxmRVUfgBlDnA==
+  dependencies:
+    "@polkadot/networks" "^13.0.2"
+    "@polkadot/util" "^13.0.2"
+    eventemitter3 "^5.0.1"
+    store "^2.0.12"
     tslib "^2.6.2"
 
 "@polkadot/ui-settings@3.7.1":
@@ -1436,6 +1461,11 @@ cross-spawn@^7.0.0, cross-spawn@^7.0.2:
     path-key "^3.1.0"
     shebang-command "^2.0.0"
     which "^2.0.1"
+
+crypto@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/crypto/-/crypto-1.0.1.tgz#2af1b7cad8175d24c8a1b0778255794a21803037"
+  integrity sha512-VxBKmeNcqQdiUQUW2Tzq0t377b54N2bMtXO/qiLa+6eRRmmC4qT3D4OnTGoT/U6O9aklQ/jTwbOtRMTTY8G0Ig==
 
 css-color-keywords@^1.0.0:
   version "1.0.0"
@@ -2726,6 +2756,11 @@ minimist@^1.2.0, minimist@^1.2.6:
   version "7.1.2"
   resolved "https://registry.yarnpkg.com/minipass/-/minipass-7.1.2.tgz#93a9626ce5e5e66bd4db86849e7515e92340a707"
   integrity sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==
+
+mkdirp@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-3.0.1.tgz#e44e4c5607fb279c168241713cc6e0fea9adcb50"
+  integrity sha512-+NsyUUAZDmo6YVHzL/stxSu3t9YS1iljliy3BSDrXJ/dkn1KYdmtZODGGjLcc9XLgVVpH4KshHB8XmZgMhaBXg==
 
 mock-socket@^9.3.1:
   version "9.3.1"

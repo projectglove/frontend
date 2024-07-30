@@ -16,7 +16,7 @@ import Footer from '@/components/footer';
 import LearnMore from '@/components/learn-more';
 import dynamic from 'next/dynamic';
 import AccountSelector from '@/components/account-selector';
-import ConfirmVote from '@/components/confirm-vote';
+// import ConfirmVote from '@/components/confirm-vote';
 
 interface LayoutProps {
   children: ReactNode;
@@ -35,7 +35,7 @@ const fontBody = Fraunces({
 });
 
 const GloveProxy = dynamic(() => import('../components/glove-proxy'), { ssr: false });
-// const Nav = dynamic(() => import('../components/nav'), { ssr: false });
+const ConfirmVote = dynamic(() => import('../components/confirm-vote'), { ssr: false });
 
 export default function Layout({ children }: LayoutProps) {
   return (

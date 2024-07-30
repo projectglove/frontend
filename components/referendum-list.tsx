@@ -26,7 +26,7 @@ export function ReferendumList() {
         setReferenda(treasuryRefs);
         setAmounts(Array.from({ length: treasuryRefs.length }, () => 0));
       }
-      console.log({ data });
+      // console.log({ data });
     };
     load();
   }, []);
@@ -93,7 +93,6 @@ export function ReferendumList() {
     }
   };
   const handlePreferredDirectionChange = (index: number, value: PreferredDirection) => {
-    console.log('preferredDirection', { index, value });
     const newPreferredDirection = [...preferredDirection];
     newPreferredDirection[index] = value;
     setPreferredDirection(newPreferredDirection);

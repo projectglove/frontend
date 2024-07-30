@@ -6,12 +6,33 @@ const ApiContext = createContext<ApiPromise | null>(null);
 
 const ApiProvider = ({ children }: { children: React.ReactNode; }) => {
   const [api, setApi] = useState<ApiPromise | null>(null);
-
   useEffect(() => {
     const setupApi = async () => {
       const provider = new WsProvider(TEST_WSS);
+      const types = {
+        VoteRequest: {
+          "account": "AccountId32",
+          "genesis_hash": "H256",
+          "poll_index": "Compact<u32>",
+          "nonce": "u32",
+          "aye": "bool",
+          "balance": "u128",
+          "conviction": "Conviction"
+        },
+        Conviction: {
+          "_enum": {
+            "None": null,
+            "Locked1x": null,
+            "Locked2x": null,
+            "Locked3x": null,
+            "Locked4x": null,
+            "Locked5x": null,
+            "Locked6x": null
+          }
+        }
+      };
       try {
-        const api = await ApiPromise.create({ provider, noInitWarn: true });
+        const api = await ApiPromise.create({ provider, noInitWarn: true, types });
         setApi(api);
       } catch (error) {
         console.error(error);

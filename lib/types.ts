@@ -34,7 +34,7 @@ export interface TrackConfig {
 
 export type TrackEntry = [number, TrackConfig];
 
-export type PreferredDirection = 'Aye' | 'Nay' | 'Abstain';
+export type PreferredDirection = 'Aye' | 'Nay';
 
 export interface ExtensionConfig {
   disallowed: string[];

@@ -11,7 +11,7 @@ export default function VotingOptions({ index, handleAmountChange, handleMultipl
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 col-span-2 p-3 items-center">
       <div>
         <span className="flex flex-row sm:flex-col md:flex-row gap-x-1 text-xs font-medium mb-1 text-emerald-500 truncate">
-          Direction <span className="text-gray-400 whitespace-normal ellipsis">(Aye/Nay/Abstain)</span>
+          Direction <span className="text-gray-400 whitespace-normal ellipsis">(Aye/Nay)</span>
         </span>
         <Select onValueChange={(value) => handlePreferredDirectionChange(index, value as PreferredDirection)}>
           <SelectTrigger className="w-full">
@@ -20,7 +20,6 @@ export default function VotingOptions({ index, handleAmountChange, handleMultipl
           <SelectContent>
             <SelectItem value="Aye">Aye</SelectItem>
             <SelectItem value="Nay">Nay</SelectItem>
-            <SelectItem value="Abstain">Abstain</SelectItem>
           </SelectContent>
         </Select>
       </div>

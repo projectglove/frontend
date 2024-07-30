@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 export async function GET(req: Request) {
   try {
     const response = await fetch('https://enclave.test.projectglove.io/info', {
@@ -10,8 +12,8 @@ export async function GET(req: Request) {
       throw new Error('Failed to fetch data');
     }
     const data = await response.json();
-    return new Response(JSON.stringify(data), { status: 200 });
+    return NextResponse.json(data);
   } catch (error) {
-    return new Response(JSON.stringify({ message: 'Failed to fetch data', error: (error as Error).message }), { status: 500 });
+    return NextResponse.json({ message: 'GET Error', error }, { status: 500 });
   }
 }

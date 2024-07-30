@@ -1,19 +1,28 @@
+import { NextResponse } from "next/server";
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const response = await fetch('https://enclave.test.projectglove.io/vote', {
+    const request = await req.json();
+    console.log('POST request:', request);
+    const response: Response = await fetch('https://enclave.test.projectglove.io/vote', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(request),
     });
     if (!response.ok) {
-      throw new Error('Failed to post data');
+      console.log(JSON.stringify(response.body));
+      console.log(response.status, response.statusText);
+      throw new Error('Could not post data');
+    } else {
+      const data = await response.json();
+      console.log({ data });
+      return NextResponse.json(response);
     }
-    const data = await response.json();
-    return new Response(JSON.stringify(data), { status: 200 });
   } catch (error) {
-    return new Response(JSON.stringify({ message: 'Failed to post data', error: (error as Error).message }), { status: 500 });
+    if (error) {
+      return NextResponse.json({ message: 'POST Error', error: (error as any).message }, { status: 500 });
+    }
   }
 }
