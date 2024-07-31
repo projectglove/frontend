@@ -106,10 +106,10 @@ export default function ConfirmVote() {
     encodedMultiSignature.set(Uint8Array.of(1), 0);
     encodedMultiSignature.set(rawSignature, 1); // Set the rest of the bytes to signature
 
-    const signature = Buffer.from(message.signature).toString('hex'); // removes 0x
+    const signature = u8aToHex(encodedMultiSignature);
     const signedVoteRequest = {
       request: voteRequestScaleHex,
-      signature: u8aToHex(encodedMultiSignature)
+      signature
     };
 
     console.log('signedVoteRequest', signedVoteRequest);
@@ -125,18 +125,16 @@ export default function ConfirmVote() {
         body: JSON.stringify(signedVoteRequest),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        console.log({ error, response });
-        const errorMessage = error.message || 'Failed to submit vote: ' + response.status + ' ' + response.statusText;
-        addMessage({ type: 'error', content: errorMessage, title: '' });
-        throw new Error(errorMessage);
-      }
-
       const result = await response.json();
 
-      if (result.success) {
-        addMessage({ type: 'success', content: `Vote submitted successfully to mixer but it may take a while longer to finalize.`, title: '' });
+      if (result.ok) {
+        if (result.success) {
+          addMessage({ type: 'success', content: `Vote submitted successfully to mixer but it may take a while longer to finalize.`, title: '' });
+        }
+      } else {
+        const errorMessage = result.message || 'Failed to submit vote: ' + response.status + ' ' + response.statusText;
+        addMessage({ type: 'error', content: errorMessage, title: '' });
+        throw new Error(errorMessage);
       }
     } catch (error: any) {
       console.error(error);
