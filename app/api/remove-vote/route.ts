@@ -4,7 +4,7 @@ export async function POST(req: Request) {
   try {
     const request = await req.json();
     console.log('POST request:', request);
-    const response: Response = await fetch('https://enclave.test.projectglove.io/vote', {
+    const response: Response = await fetch('https://enclave.test.projectglove.io/remove-vote', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

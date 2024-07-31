@@ -55,10 +55,11 @@ export default function ConfirmVote() {
     const voteAmount = amounts[referendum.index];
     const voteMultiplier = multipliers[referendum.index];
     const voteDirection = preferredDirection[referendum.index];
+    const accountAddress = selectedAccount.address;
 
     await web3Enable(APP_NAME);
 
-    const injector = await web3FromAddress(selectedAccount.address);
+    const injector = await web3FromAddress(accountAddress);
     const signer = injector.signer?.signRaw;
 
     if (!signer) {
@@ -75,7 +76,6 @@ export default function ConfirmVote() {
     const blockHash = genesisHash.toHex();
     const pollIndex = referendum.referendumNumber;
     const balance = Number(voteAmount) * Math.pow(10, tokenDecimals);
-    const accountAddress = selectedAccount.address;
 
     const voteRequest = api.createType('VoteRequest', {
       account: accountAddress,
@@ -86,7 +86,6 @@ export default function ConfirmVote() {
       balance: Number(balance),
       conviction: voteMultiplier
     });
-    const hexRequest = Buffer.from(voteRequest.toU8a()).toString('hex'); // removes 0x
 
     // Convert the VoteRequest into SCALE-encoded bytes, and then encode the bytes into hex
     const voteRequestScaleHex = u8aToHex(voteRequest.toU8a());
@@ -125,14 +124,94 @@ export default function ConfirmVote() {
         body: JSON.stringify(signedVoteRequest),
       });
 
-      const result = await response.json();
-
-      if (result.ok) {
-        if (result.success) {
-          addMessage({ type: 'success', content: `Vote submitted successfully to mixer but it may take a while longer to finalize.`, title: '' });
-        }
+      if (response.status === 200 && response.statusText === 'OK') {
+        addMessage({ type: 'success', content: `Vote submitted successfully to mixer but it may take a while longer to finalize.`, title: '' });
+        setOpenReferendumDialog(false);
       } else {
+        const result = await response.json();
         const errorMessage = result.message || 'Failed to submit vote: ' + response.status + ' ' + response.statusText;
+        addMessage({ type: 'error', content: errorMessage, title: '' });
+        throw new Error(errorMessage);
+      }
+    } catch (error: any) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  type RemoveVoteRequest = {
+    account: string;
+    poll_index: number;
+  };
+
+  const handleVoteRemoval = async () => {
+    if (typeof window === 'undefined') return;
+    if (!referendum || !api || !selectedAccount || referendum.referendumNumber === 0) return;
+
+    setLoading(true);
+
+    const pollIndex = referendum?.referendumNumber;
+    const accountAddress = selectedAccount?.address;
+
+    await web3Enable(APP_NAME);
+
+    const injector = await web3FromAddress(accountAddress);
+    const signer = injector.signer?.signRaw;
+
+    if (!signer) {
+      throw new Error('Signer is not available');
+    }
+
+    const removeVoteRequest = api.createType('RemoveVoteRequest', {
+      account: accountAddress,
+      poll_index: pollIndex
+    });
+
+    // Convert the VoteRequest into SCALE-encoded bytes, and then encode the bytes into hex
+    const removeVoteRequestScaleHex = u8aToHex(removeVoteRequest.toU8a());
+
+    const signerResult = await signer({
+      // The hex is converted into raw bytes before being signed. So the signature produced is over the SCALE-encoded
+      // bytes (i.e. voteRequest.toU8a())
+      data: removeVoteRequestScaleHex,
+      type: 'bytes',
+      address: accountAddress
+    });
+
+    // Glove API expects a `MultiSignature` object for the signature. So we prefix the raw signature with a single
+    // byte of value 1 to represent `MultiSignature::Sr25519`.
+    const rawSignature = hexToU8a(signerResult.signature);
+    const encodedMultiSignature = new Uint8Array(1 + rawSignature.length); // Allocate memory
+    encodedMultiSignature.set(Uint8Array.of(1), 0);
+    encodedMultiSignature.set(rawSignature, 1); // Set the rest of the bytes to signature
+
+    const signature = u8aToHex(encodedMultiSignature);
+    const signedRemoveVoteRequest = {
+      request: removeVoteRequestScaleHex,
+      signature
+    };
+
+    console.log('removeVoteRequest', removeVoteRequest);
+
+    addMessage({ type: 'info', content: "Removing your vote from the Glove mixer...", title: '' });
+
+    try {
+      const response = await fetch('/api/remove-vote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(signedRemoveVoteRequest),
+      });
+
+      if (response.status === 200 && response.statusText === 'OK') {
+        addMessage({ type: 'success', content: `Vote removal was successfully submitted (if a matching vote was actually found)!`, title: '' });
+        setOpenReferendumDialog(false);
+      } else {
+        const result = await response.json();
+        console.log(result);
+        const errorMessage = result.message || 'Failed to remove vote: ' + response.status + ' ' + response.statusText;
         addMessage({ type: 'error', content: errorMessage, title: '' });
         throw new Error(errorMessage);
       }
@@ -160,8 +239,11 @@ export default function ConfirmVote() {
             <Button variant="ghost" className="px-4 py-2 rounded-md w-full" onClick={() => setOpenReferendumDialog(false)}>
               Cancel
             </Button>
-            <Button disabled={inputError.length > 0} variant="default" className="px-4 py-2 rounded-md w-full" onClick={() => handleVoteSubmission()}>
-              Add/Update Vote
+            <Button disabled={loading} variant="outline" className="px-4 py-2 rounded-md w-full" onClick={() => handleVoteRemoval()}>
+              Remove Vote
+            </Button>
+            <Button disabled={inputError.length > 0 || loading} variant="default" className="px-4 py-2 rounded-md w-full" onClick={() => handleVoteSubmission()}>
+              {loading ? 'Submitting...' : 'Add/Update Vote'}
             </Button>
           </DialogFooter>
         </div>

@@ -45,7 +45,7 @@ export function Snackbar({ message, initialOpen = false }: SnackbarProps) {
         <div>
           <BellIcon className="h-5 w-5" />
         </div>
-        <div className="flex-1 pr-8 mr-1">
+        <div className="flex-1 flex-col pr-8 mr-3">
           <p className="text-sm font-medium leading-tight">{message.title}</p>
           <p className="text-sm leading-tight">{message.content}</p>
         </div>
