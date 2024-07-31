@@ -140,11 +140,6 @@ export default function ConfirmVote() {
     }
   };
 
-  type RemoveVoteRequest = {
-    account: string;
-    poll_index: number;
-  };
-
   const handleVoteRemoval = async () => {
     if (typeof window === 'undefined') return;
     if (!referendum || !api || !selectedAccount || referendum.referendumNumber === 0) return;

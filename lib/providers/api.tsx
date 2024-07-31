@@ -21,7 +21,7 @@ const ApiProvider = ({ children }: { children: React.ReactNode; }) => {
         },
         RemoveVoteRequest: {
           "account": "AccountId32",
-          "poll_index": "Compact<u32>"
+          "poll_index": "u32"
         },
         Conviction: {
           "_enum": {
