@@ -107,23 +107,27 @@ export default function ConfirmVote() {
       conviction: voteMultiplier
     });
 
-    const hexRequest = u8aToHex(voteRequest.toU8a());
-    console.log({ request: hexRequest });
-    const message = await signer({
-      data: hexRequest,
+    // Convert the VoteRequest into SCALE-encoded bytes, and then encode the bytes into hex
+    const voteRequestScaleHex = u8aToHex(voteRequest.toU8a());
+
+    const signerResult = await signer({
+      // The hex is converted into raw bytes before being signed. So the signature produced is over the SCALE-encoded
+      // bytes (i.e. voteRequest.toU8a())
+      data: voteRequestScaleHex,
       type: 'bytes',
       address: accountAddress
     });
 
-    // const message = accountSigner.sign(voteRequest.toU8a(), { withType: true });
-    const messageArray = new Uint8Array(1 + hexToU8a(message.signature).length); // Allocate memory
-    messageArray.set(Uint8Array.of(message.id), 0); // Set the first byte to id
-    messageArray.set(hexToU8a(message.signature), 1); // Set the rest of the bytes to signature
-    const signature = Buffer.from(messageArray).toString('hex');
+    // Glove API expects a `MultiSignature` object for the signature. So we prefix the raw signature with a single
+    // byte of value 1 to represent `MultiSignature::Sr25519`.
+    const rawSignature = hexToU8a(signerResult.signature);
+    const encodedMultiSignature = new Uint8Array(1 + rawSignature.length); // Allocate memory
+    encodedMultiSignature.set(Uint8Array.of(1), 0);
+    encodedMultiSignature.set(rawSignature, 1); // Set the rest of the bytes to signature
 
     const signedVoteRequest = {
-      request: Buffer.from(voteRequest.toU8a()).toString('hex'),
-      signature
+      request: voteRequestScaleHex,
+      signature: u8aToHex(encodedMultiSignature)
     };
 
     console.log('signedVoteRequest', signedVoteRequest);
