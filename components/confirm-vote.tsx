@@ -1,3 +1,5 @@
+// extension-dapp
+
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -11,8 +13,6 @@ import { useAccounts } from '@/lib/providers/account';
 import { randomBytes } from 'crypto';
 import { web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
 import { APP_NAME } from '@/lib/consts';
-import { decodeAddress, encodeAddress, cryptoWaitReady } from '@polkadot/util-crypto';
-import keyring from '@polkadot/ui-keyring';
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 
 export default function ConfirmVote() {
@@ -58,10 +58,6 @@ export default function ConfirmVote() {
 
     await web3Enable(APP_NAME);
 
-    // await cryptoWaitReady().then(() => {
-    //   keyring.loadAll({ type: 'sr25519', ss58Format: 42 });
-    // });
-
     const injector = await web3FromAddress(selectedAccount.address);
     const signer = injector.signer?.signRaw;
 
@@ -80,22 +76,6 @@ export default function ConfirmVote() {
     const pollIndex = referendum.referendumNumber;
     const balance = Number(voteAmount) * Math.pow(10, tokenDecimals);
     const accountAddress = selectedAccount.address;
-    const publicKey = decodeAddress(selectedAccount.address);
-
-    // const accountSigner = keyring.keyring.pairs.find(pair => {
-    //   console.log('publickey', encodeAddress(pair.publicKey, 42), accountAddress);
-    //   return encodeAddress(pair.publicKey, 42) === accountAddress;
-    // });
-
-    // // keyring.keyring.addFromAddress(selectedAccount.address); // Add current address as pair
-    // // const accountSigner = keyring.getPair(accountAddress);
-    // // accountSigner.unlock;
-
-    // if (!accountSigner) {
-    //   throw new Error('Signer account not found');
-    // }
-
-    // console.log('accountSigner', accountSigner.address, accountSigner.publicKey);
 
     const voteRequest = api.createType('VoteRequest', {
       account: accountAddress,
@@ -106,23 +86,21 @@ export default function ConfirmVote() {
       balance: Number(balance),
       conviction: voteMultiplier
     });
+    const hexRequest = Buffer.from(voteRequest.toU8a()).toString('hex'); // removes 0x
 
-    const hexRequest = u8aToHex(voteRequest.toU8a());
-    console.log({ request: hexRequest });
     const message = await signer({
       data: hexRequest,
       type: 'bytes',
       address: accountAddress
     });
 
-    // const message = accountSigner.sign(voteRequest.toU8a(), { withType: true });
     const messageArray = new Uint8Array(1 + hexToU8a(message.signature).length); // Allocate memory
-    messageArray.set(Uint8Array.of(message.id), 0); // Set the first byte to id
+    messageArray.set(Uint8Array.of(1), 0); // Set the first byte to id
     messageArray.set(hexToU8a(message.signature), 1); // Set the rest of the bytes to signature
-    const signature = Buffer.from(messageArray).toString('hex');
 
+    const signature = Buffer.from(message.signature).toString('hex'); // removes 0x
     const signedVoteRequest = {
-      request: Buffer.from(voteRequest.toU8a()).toString('hex'),
+      request: hexRequest,
       signature
     };
 
@@ -142,7 +120,9 @@ export default function ConfirmVote() {
       if (!response.ok) {
         const error = await response.json();
         console.log({ error, response });
-        throw new Error('Failed to submit vote: ' + response.status + ' ' + response.statusText + ' ' + error.message);
+        const errorMessage = error.message || 'Failed to submit vote: ' + response.status + ' ' + response.statusText;
+        addMessage({ type: 'error', content: errorMessage, title: '' });
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -151,7 +131,7 @@ export default function ConfirmVote() {
         addMessage({ type: 'success', content: `Vote submitted successfully to mixer but it may take a while longer to finalize.`, title: '' });
       }
     } catch (error: any) {
-      addMessage({ type: 'error', content: error.message || 'Failed to submit vote: ' + error.message, title: '' });
+      console.error(error);
     } finally {
       setLoading(false);
     }

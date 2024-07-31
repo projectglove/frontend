@@ -14,7 +14,8 @@ export async function POST(req: Request) {
     if (!response.ok) {
       console.log(JSON.stringify(response.body));
       console.log(response.status, response.statusText);
-      throw new Error('Could not post data');
+      const error = response.status + ' ' + response.statusText;
+      throw new Error(error);
     } else {
       const data = await response.json();
       console.log({ data });
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
     }
   } catch (error) {
     if (error) {
-      return NextResponse.json({ message: 'POST Error', error: (error as any).message }, { status: 500 });
+      return NextResponse.json({ message: (error as any).message, error: (error as any).message }, { status: 400 });
     }
   }
 }
