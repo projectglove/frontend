@@ -90,8 +90,13 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     if (savedVoteData) {
       const voteData: VoteData[] = JSON.parse(savedVoteData);
       const currentProxyVoteData = voteData.filter((vote) => vote.proxy === currentProxy);
-      setVoteDataState(currentProxyVoteData);
-      Cookies.set('voteData', JSON.stringify(currentProxyVoteData));
+
+      if (currentProxyVoteData.length > 0) {
+        setVoteDataState(currentProxyVoteData);
+        Cookies.set('voteData', JSON.stringify(currentProxyVoteData));
+      } else {
+        setVoteDataState([]);
+      }
     }
   }, [currentProxy]);
 

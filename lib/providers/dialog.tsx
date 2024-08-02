@@ -12,9 +12,9 @@ interface DialogStateType {
   openLearnMore: boolean;
   openReferendumDialog: boolean;
   referendum: ReferendumDialogProps | null;
-  amounts: (number | string)[];
-  multipliers: Conviction[];
-  directions: PreferredDirection[];
+  amounts: { [key: number]: number | string; };
+  multipliers: { [key: number]: Conviction; };
+  directions: { [key: number]: PreferredDirection; };
 }
 
 interface DialogActionType {
@@ -26,7 +26,7 @@ interface DialogActionType {
   setOpenLearnMore: (openLearnMore: boolean) => void;
   setOpenReferendumDialog: (openReferendumDialog: boolean) => void;
   setReferendum: (referendum: ReferendumDialogProps | null) => void;
-  setVotingOptions: (amounts: (number | string)[], multipliers: Conviction[], directions: PreferredDirection[]) => void;
+  setVotingOptions: (amounts: { [key: number]: number | string; }, multipliers: { [key: number]: Conviction; }, directions: { [key: number]: PreferredDirection; }) => void;
 }
 
 type DialogContextType = DialogStateType & DialogActionType;
@@ -41,11 +41,11 @@ export const DialogProvider = ({ children }: { children: ReactNode; }) => {
   const [openLearnMore, setOpenLearnMore] = useState(false);
   const [openReferendumDialog, setOpenReferendumDialog] = useState<boolean>(false);
   const [referendum, setReferendum] = useState<ReferendumDialogProps | null>(null);
-  const [amounts, setAmounts] = useState<(number | string)[]>([]);
-  const [multipliers, setMultipliers] = useState<Conviction[]>([]);
-  const [directions, setDirections] = useState<PreferredDirection[]>([]);
+  const [amounts, setAmounts] = useState<{ [key: number]: number | string; }>({});
+  const [multipliers, setMultipliers] = useState<{ [key: number]: Conviction; }>({});
+  const [directions, setDirections] = useState<{ [key: number]: PreferredDirection; }>({});
 
-  const setVotingOptions = (amounts: (number | string)[], multipliers: Conviction[], directions: PreferredDirection[]) => {
+  const setVotingOptions = (amounts: { [key: number]: number | string; }, multipliers: { [key: number]: Conviction; }, directions: { [key: number]: PreferredDirection; }) => {
     setAmounts(amounts);
     setMultipliers(multipliers);
     setDirections(directions);

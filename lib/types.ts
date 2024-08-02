@@ -56,9 +56,9 @@ export interface ExtensionConfig {
 
 export interface VotingOptionsProps {
   index: number;
-  amounts: (number | string)[];
-  multipliers: (number | string)[];
-  preferredDirection: PreferredDirection[];
+  amounts: { [key: number]: number | string; };
+  multipliers: { [key: number]: Conviction; };
+  preferredDirection: { [key: number]: PreferredDirection; };
   handlePreferredDirectionChange: (index: number, value: PreferredDirection) => void;
   handleAmountChange: (index: number, value: string) => void;
   handleMultiplierChange: (index: number, value: Conviction) => void;

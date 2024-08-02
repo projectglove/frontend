@@ -6,7 +6,6 @@ import { useDialog } from '@/lib/providers/dialog';
 
 export default function VotingOptions({ index, handleAmountChange, handleMultiplierChange, handlePreferredDirectionChange }: VotingOptionsProps) {
   const { amounts, multipliers, directions: preferredDirection } = useDialog();
-
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 col-span-2 p-3 items-center">
       <div>
@@ -29,7 +28,7 @@ export default function VotingOptions({ index, handleAmountChange, handleMultipl
         </span>
         <Input
           type="number"
-          value={amounts[index]}
+          defaultValue={amounts[index]}
           onChange={(e) => handleAmountChange(index, e.target.value)}
           className="w-full"
           required

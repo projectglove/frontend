@@ -11,9 +11,9 @@ import { useAccounts } from "@/lib/providers/account";
 export function ReferendumList() {
   const [filter, setFilter] = useState("all");
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [amounts, setAmounts] = useState<(number | string)[]>(() => Array.from({ length: 10 }, () => 0));
-  const [multipliers, setMultipliers] = useState<Conviction[]>(() => Array.from({ length: 10 }, () => Conviction.None));
-  const [preferredDirection, setPreferredDirection] = useState<PreferredDirection[]>(() => Array.from({ length: 10 }, () => 'None'));
+  const [amounts, setAmounts] = useState<{ [key: number]: number | string; }>({});
+  const [multipliers, setMultipliers] = useState<{ [key: number]: Conviction; }>({});
+  const [preferredDirection, setPreferredDirection] = useState<{ [key: number]: PreferredDirection; }>({});
   const [referenda, setReferenda] = useState<ReferendumData[]>([]);
   const [votedPollIndices, setVotedPollIndices] = useState<Set<number>>(new Set());
   const { setOpenReferendumDialog, setReferendum, setVotingOptions, openReferendumDialog } = useDialog();
@@ -39,14 +39,29 @@ export function ReferendumList() {
 
   useEffect(() => {
     if (voteData) {
-      const indexes = new Set(voteData.map(vote => vote.pollIndex));
-      const amounts = new Set(voteData.map(vote => vote.amount));
-      const multipliers = new Set(voteData.map(vote => vote.conviction));
-      const preferredDirection = new Set(voteData.map(vote => vote.direction));
+      const newAmounts: { [key: number]: number | string; } = {};
+      const newMultipliers: { [key: number]: Conviction; } = {};
+      const newPreferredDirections: { [key: number]: PreferredDirection; } = {};
+
+      voteData.forEach(vote => {
+        newAmounts[vote.pollIndex] = vote.amount;
+        newMultipliers[vote.pollIndex] = vote.conviction;
+        newPreferredDirections[vote.pollIndex] = vote.direction;
+      });
+
+      setAmounts(newAmounts);
+      setMultipliers(newMultipliers);
+      setPreferredDirection(newPreferredDirections);
+    }
+  }, [voteData]);
+
+  useEffect(() => {
+    if (voteData) {
+      const indexes = new Set<number>();
+      voteData.forEach(vote => {
+        indexes.add(vote.pollIndex);
+      });
       setVotedPollIndices(indexes);
-      setAmounts(Array.from(amounts));
-      setMultipliers(Array.from(multipliers));
-      setPreferredDirection(Array.from(preferredDirection));
     }
   }, [voteData]);
 
@@ -70,9 +85,6 @@ export function ReferendumList() {
       }
     }).sort((a, b) => b.referendum_index - a.referendum_index);
   }, [filter, referenda, votedPollIndices]);
-  const memoizedAmounts = useMemo(() => amounts, [amounts]);
-  const memoizedMultipliers = useMemo(() => multipliers, [multipliers]);
-  const memoizedPreferredDirection = useMemo(() => preferredDirection, [preferredDirection]);
 
   const formatTimeRemaining = () => {
     const days = Math.floor(timeRemaining / (24 * 60 * 60));
@@ -83,12 +95,12 @@ export function ReferendumList() {
   };
   const handleAmountChange = (index: number, value: string) => {
     if (value === '') {
-      const newAmounts = [...amounts];
+      const newAmounts = { ...amounts };
       newAmounts[index] = value;
       setAmounts(newAmounts);
     } else if (!isNaN(parseFloat(value))) {
       const newValue = Math.max(0, parseFloat(value));
-      const newAmounts = [...amounts];
+      const newAmounts = { ...amounts };
       newAmounts[index] = newValue;
       setAmounts(newAmounts);
     } else {
@@ -97,17 +109,17 @@ export function ReferendumList() {
   };
   const handleMultiplierChange = (index: number, value: Conviction | '') => {
     if (value === '') {
-      const newMultipliers = [...multipliers];
+      const newMultipliers = { ...multipliers };
       newMultipliers[index] = Conviction.None;
       setMultipliers(newMultipliers);
     } else {
-      const newMultipliers = [...multipliers];
+      const newMultipliers = { ...multipliers };
       newMultipliers[index] = value;
       setMultipliers(newMultipliers);
     }
   };
   const handlePreferredDirectionChange = (index: number, value: PreferredDirection) => {
-    const newPreferredDirection = [...preferredDirection];
+    const newPreferredDirection = { ...preferredDirection };
     newPreferredDirection[index] = value;
     setPreferredDirection(newPreferredDirection);
   };
@@ -153,11 +165,11 @@ export function ReferendumList() {
         {filteredData.map((ref, index) => {
           const ConfirmVote = () =>
             <VotingOptions
-              key={index}
-              index={index}
-              amounts={memoizedAmounts.filter((_, i) => i !== index)}
-              multipliers={memoizedMultipliers.filter((_, i) => i !== index)}
-              preferredDirection={memoizedPreferredDirection.filter((_, i) => i !== index)}
+              key={ref.referendum_index}
+              index={ref.referendum_index}
+              amounts={amounts}
+              multipliers={multipliers}
+              preferredDirection={preferredDirection}
               handlePreferredDirectionChange={handlePreferredDirectionChange}
               handleAmountChange={handleAmountChange}
               handleMultiplierChange={handleMultiplierChange}
@@ -197,7 +209,7 @@ export function ReferendumList() {
                   </div>
                 </div>
               </div>
-              <div className="hover:bg-muted/50 transition-colors rounded-md hover:cursor-glove" onClick={() => handleOpenReferendumDialog(index, ref.referendum_index, <ConfirmVote />)}>
+              <div key={index} className="hover:bg-muted/50 transition-colors rounded-md hover:cursor-glove" onClick={() => handleOpenReferendumDialog(ref.referendum_index, ref.referendum_index, <ConfirmVote />)}>
                 <div className="pointer-events-none">
                   <ConfirmVote />
                 </div>

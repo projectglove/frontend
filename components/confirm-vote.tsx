@@ -20,7 +20,7 @@ export default function ConfirmVote() {
   const [inputError, setInputError] = useState<string[]>([]);
   const { openReferendumDialog, setOpenReferendumDialog, referendum, amounts, multipliers, directions: preferredDirection } = useDialog();
   const { addMessage } = useSnackbar();
-  const { selectedAccount } = useAccounts();
+  const { selectedAccount, voteData, setVoteData, currentProxy, gloveProxy } = useAccounts();
   const api = useApi();
 
   useEffect(() => {
@@ -77,8 +77,6 @@ export default function ConfirmVote() {
     const pollIndex = referendum.referendumNumber;
     const balance = Number(voteAmount) * Math.pow(10, tokenDecimals);
 
-    console.log({ pollIndex, voteDirection, voteAmount, voteMultiplier, balance });
-
     const voteRequest = api.createType('VoteRequest', {
       account: accountAddress,
       genesis_hash: blockHash,
@@ -129,6 +127,16 @@ export default function ConfirmVote() {
       if (response.status === 200 && response.statusText === 'OK') {
         addMessage({ type: 'success', content: `Vote submitted successfully to mixer but it may take a while longer to finalize.`, title: '' });
         setOpenReferendumDialog(false);
+        const newVote = {
+          pollIndex: pollIndex,
+          amount: Number(voteAmount),
+          conviction: voteMultiplier,
+          direction: voteDirection,
+          proxy: currentProxy || gloveProxy || ''
+        };
+        const updatedVoteData = voteData?.filter(vote => vote.pollIndex !== pollIndex) || [];
+        updatedVoteData.push(newVote);
+        setVoteData(updatedVoteData);
       } else {
         const result = await response.json();
         const errorMessage = result.message || 'Failed to submit vote: ' + response.status + ' ' + response.statusText;
@@ -205,9 +213,12 @@ export default function ConfirmVote() {
       if (response.status === 200 && response.statusText === 'OK') {
         addMessage({ type: 'success', content: `Vote removal was successfully submitted (if a matching vote was actually found)!`, title: '' });
         setOpenReferendumDialog(false);
+        const updatedVoteData = voteData?.filter(vote => vote.pollIndex !== pollIndex);
+        if (updatedVoteData) {
+          setVoteData(updatedVoteData);
+        }
       } else {
         const result = await response.json();
-        console.log(result);
         const errorMessage = result.message || 'Failed to remove vote: ' + response.status + ' ' + response.statusText;
         addMessage({ type: 'error', content: errorMessage, title: '' });
         throw new Error(errorMessage);
