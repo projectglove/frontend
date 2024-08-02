@@ -128,6 +128,7 @@ export default function ConfirmVote() {
         addMessage({ type: 'success', content: `Vote submitted successfully to mixer but it may take a while longer to finalize.`, title: '' });
         setOpenReferendumDialog(false);
         const newVote = {
+          address: accountAddress,
           pollIndex: pollIndex,
           amount: Number(voteAmount),
           conviction: voteMultiplier,

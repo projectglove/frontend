@@ -89,16 +89,16 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     const savedVoteData = Cookies.get('voteData');
     if (savedVoteData) {
       const voteData: VoteData[] = JSON.parse(savedVoteData);
-      const currentProxyVoteData = voteData.filter((vote) => vote.proxy === currentProxy);
+      const relevantVoteData = voteData.filter((vote) => vote.address === selectedAccount?.address);
 
-      if (currentProxyVoteData.length > 0) {
-        setVoteDataState(currentProxyVoteData);
-        Cookies.set('voteData', JSON.stringify(currentProxyVoteData));
+      if (relevantVoteData.length > 0) {
+        setVoteDataState(relevantVoteData);
+        Cookies.set('voteData', JSON.stringify(relevantVoteData));
       } else {
         setVoteDataState([]);
       }
     }
-  }, [currentProxy]);
+  }, [selectedAccount?.address, currentProxy]);
 
   const setAccounts = (accounts: InjectedAccountWithMeta[]) => {
     setAccountsState(accounts);

@@ -16,8 +16,8 @@ export function ReferendumList() {
   const [preferredDirection, setPreferredDirection] = useState<{ [key: number]: PreferredDirection; }>({});
   const [referenda, setReferenda] = useState<ReferendumData[]>([]);
   const [votedPollIndices, setVotedPollIndices] = useState<Set<number>>(new Set());
-  const { setOpenReferendumDialog, setReferendum, setVotingOptions, openReferendumDialog } = useDialog();
-  const { currentNetwork, voteData } = useAccounts();
+  const { setOpenReferendumDialog, setReferendum, setVotingOptions, setOpenGloveProxy } = useDialog();
+  const { currentNetwork, voteData, currentProxy, gloveProxy } = useAccounts();
 
   // useEffect(() => {
   //   const interval = setInterval(() => {
@@ -125,8 +125,12 @@ export function ReferendumList() {
   };
   const handleOpenReferendumDialog = (index: number, referendumNumber: number, confirmVote: ReactNode) => {
     setReferendum(null);
-    setOpenReferendumDialog(true);
-    setReferendum({ index, referendumNumber, confirmVote });
+    if (currentProxy && currentProxy === gloveProxy) {
+      setOpenReferendumDialog(true);
+      setReferendum({ index, referendumNumber, confirmVote });
+    } else {
+      setOpenGloveProxy(true);
+    }
   };
 
   return (

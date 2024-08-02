@@ -110,6 +110,7 @@ export enum Conviction {
 }
 
 export type VoteData = {
+  address: string;
   proxy: string;
   pollIndex: number;
   amount: number;
