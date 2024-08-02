@@ -11,9 +11,8 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify(request),
     });
+    console.log('/remove-vote', response);
     if (!response.ok) {
-      console.log(JSON.stringify(response.body));
-      console.log(response.status, response.statusText);
       const error = response.status + ' ' + response.statusText;
       throw new Error(error);
     } else {
@@ -22,7 +21,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.log(error);
     if (error) {
-      return NextResponse.json({ message: (error as any).message, error: (error as any).message }, { status: 400 });
+      return NextResponse.json({ message: (error as any).message, error: (error as any).message }, { status: 500 });
     }
   }
 }

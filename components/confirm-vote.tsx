@@ -77,6 +77,8 @@ export default function ConfirmVote() {
     const pollIndex = referendum.referendumNumber;
     const balance = Number(voteAmount) * Math.pow(10, tokenDecimals);
 
+    console.log({ pollIndex, voteDirection, voteAmount, voteMultiplier, balance });
+
     const voteRequest = api.createType('VoteRequest', {
       account: accountAddress,
       genesis_hash: blockHash,

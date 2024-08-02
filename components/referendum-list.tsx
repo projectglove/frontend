@@ -11,29 +11,13 @@ import { useAccounts } from "@/lib/providers/account";
 export function ReferendumList() {
   const [filter, setFilter] = useState("all");
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [amounts, setAmounts] = useState<(number | string)[]>([]);
-  const [multipliers, setMultipliers] = useState<Conviction[]>([]);
+  const [amounts, setAmounts] = useState<(number | string)[]>(() => Array.from({ length: 10 }, () => 0));
+  const [multipliers, setMultipliers] = useState<Conviction[]>(() => Array.from({ length: 10 }, () => Conviction.None));
+  const [preferredDirection, setPreferredDirection] = useState<PreferredDirection[]>(() => Array.from({ length: 10 }, () => 'None'));
   const [referenda, setReferenda] = useState<ReferendumData[]>([]);
-  const [preferredDirection, setPreferredDirection] = useState<PreferredDirection[]>([]);
+  const [votedPollIndices, setVotedPollIndices] = useState<Set<number>>(new Set());
   const { setOpenReferendumDialog, setReferendum, setVotingOptions, openReferendumDialog } = useDialog();
-  const { currentNetwork } = useAccounts();
-
-  useEffect(() => {
-    const load = async () => {
-      const data = await getReferendaList();
-      if (data) {
-        const treasuryRefs = data.filter(ref => ref.call_module.includes('Treasury') && ref.status.includes('Submitted'));
-        setReferenda(treasuryRefs);
-        setAmounts(Array.from({ length: treasuryRefs.length }, () => 0));
-      }
-      // console.log({ data });
-    };
-    load();
-  }, []);
-
-  useEffect(() => {
-    setVotingOptions(amounts, multipliers, preferredDirection);
-  }, [amounts, multipliers, preferredDirection]);
+  const { currentNetwork, voteData } = useAccounts();
 
   // useEffect(() => {
   //   const interval = setInterval(() => {
@@ -42,20 +26,50 @@ export function ReferendumList() {
   //   return () => clearInterval(interval);
   // }, []);
 
-  const filteredData = useMemo(() => {
-    let data = [];
-    switch (filter) {
-      case "voted":
-        data = referenda.filter(ref => parseInt(ref.approval_rate) > 50);
-        break;
-      case "not-voted":
-        data = referenda.filter(ref => parseInt(ref.approval_rate) <= 50);
-        break;
-      default:
-        data = referenda.filter(ref => parseInt(ref.approval_rate) <= 50);
+  useEffect(() => {
+    const load = async () => {
+      const data = await getReferendaList();
+      if (data) {
+        const treasuryRefs = data.filter(ref => ref.call_module.includes('Treasury') && ref.status.includes('Submitted'));
+        setReferenda(treasuryRefs);
+      }
+    };
+    load();
+  }, []);
+
+  useEffect(() => {
+    if (voteData) {
+      const indexes = new Set(voteData.map(vote => vote.pollIndex));
+      const amounts = new Set(voteData.map(vote => vote.amount));
+      const multipliers = new Set(voteData.map(vote => vote.conviction));
+      const preferredDirection = new Set(voteData.map(vote => vote.direction));
+      setVotedPollIndices(indexes);
+      setAmounts(Array.from(amounts));
+      setMultipliers(Array.from(multipliers));
+      setPreferredDirection(Array.from(preferredDirection));
     }
-    return data.sort((a, b) => b.referendum_index - a.referendum_index);
-  }, [filter, referenda]);
+  }, [voteData]);
+
+
+  useEffect(() => {
+    setVotingOptions(amounts, multipliers, preferredDirection);
+  }, [amounts, multipliers, preferredDirection]);
+
+  const filteredData = useMemo(() => {
+    return referenda.map(ref => ({
+      ...ref,
+      voted: votedPollIndices.has(ref.referendum_index)
+    })).filter(ref => {
+      switch (filter) {
+        case "voted":
+          return ref.voted;
+        case "not-voted":
+          return !ref.voted;
+        default:
+          return true;
+      }
+    }).sort((a, b) => b.referendum_index - a.referendum_index);
+  }, [filter, referenda, votedPollIndices]);
   const memoizedAmounts = useMemo(() => amounts, [amounts]);
   const memoizedMultipliers = useMemo(() => multipliers, [multipliers]);
   const memoizedPreferredDirection = useMemo(() => preferredDirection, [preferredDirection]);
@@ -173,10 +187,10 @@ export function ReferendumList() {
                     Anonymized
                   </div>
                   <div
-                    className={`px-2 py-1 rounded-md text-xs font-medium ${ index % 2 === 0 ? "border border-emerald-400 text-emerald-400" : "border border-red-500 text-red-500"
+                    className={`px-2 py-1 rounded-md text-xs font-medium ${ ref.voted ? "border border-emerald-400 text-emerald-400" : "border border-red-500 text-red-500"
                       }`}
                   >
-                    {index % 2 === 0 ? "Voted" : "Not Voted"}
+                    {ref.voted ? "Voted" : "Not Voted"}
                   </div>
                   <div className="px-2 py-1 rounded-md bg-muted text-muted-foreground text-xs font-medium">
                     {timeRemaining <= 0 ? "Ref Ended" : formatTimeRemaining()}

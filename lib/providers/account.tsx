@@ -3,25 +3,7 @@ import { InjectedAccountWithMeta, InjectedExtension } from "@polkadot/extension-
 import Cookies from 'js-cookie';
 import { useApi } from './api';
 import { useDialog } from './dialog';
-
-type AccountState = {
-  accounts: InjectedAccountWithMeta[];
-  extensions: InjectedExtension[];
-  selectedAccount: InjectedAccountWithMeta | null;
-  selectedExtension: InjectedExtension | null;
-  currentProxy: string | null;
-  gloveProxy: string | null;
-  currentNetwork: string | null;
-};
-
-type AccountContextType = AccountState & {
-  setAccounts: (accounts: InjectedAccountWithMeta[]) => void;
-  setExtensions: (extensions: InjectedExtension[]) => void;
-  setSelectedAccount: (account: InjectedAccountWithMeta | null) => void;
-  setSelectedExtension: (extension: InjectedExtension | null) => void;
-  setCurrentProxy: (proxy: string | null) => void;
-  setCurrentNetwork: (network: string | null) => void;
-};
+import { AccountContextType, VoteData } from '../types';
 
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
 
@@ -33,6 +15,7 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
   const [currentProxy, setCurrentProxyState] = useState<string | null>(null);
   const [currentNetwork, setCurrentNetworkState] = useState<string | null>(null);
   const [gloveProxy, setGloveProxyState] = useState<string | null>(null);
+  const [voteData, setVoteDataState] = useState<VoteData[] | null>(null);
   const api = useApi();
   const { openGloveProxy } = useDialog();
 
@@ -102,6 +85,16 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     setUserProxy();
   }, [api, gloveProxy, selectedAccount?.address, openGloveProxy]);
 
+  useEffect(() => {
+    const savedVoteData = Cookies.get('voteData');
+    if (savedVoteData) {
+      const voteData: VoteData[] = JSON.parse(savedVoteData);
+      const currentProxyVoteData = voteData.filter((vote) => vote.proxy === currentProxy);
+      setVoteDataState(currentProxyVoteData);
+      Cookies.set('voteData', JSON.stringify(currentProxyVoteData));
+    }
+  }, [currentProxy]);
+
   const setAccounts = (accounts: InjectedAccountWithMeta[]) => {
     setAccountsState(accounts);
   };
@@ -136,6 +129,15 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     setCurrentNetworkState(network);
   };
 
+  const setVoteData = (voteData: VoteData[] | null) => {
+    setVoteDataState(voteData);
+    if (voteData) {
+      Cookies.set('voteData', JSON.stringify(voteData));
+    } else {
+      Cookies.remove('voteData');
+    }
+  };
+
   const providerValue = useMemo(() => ({
     accounts,
     extensions,
@@ -149,8 +151,10 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     setCurrentProxy,
     gloveProxy,
     currentNetwork,
-    setCurrentNetwork
-  }), [accounts, extensions, selectedAccount, selectedExtension, currentProxy, gloveProxy, currentNetwork]);
+    setCurrentNetwork,
+    voteData,
+    setVoteData
+  }), [accounts, extensions, selectedAccount, selectedExtension, currentProxy, gloveProxy, currentNetwork, voteData]);
 
   return (
     <AccountContext.Provider value={providerValue}>

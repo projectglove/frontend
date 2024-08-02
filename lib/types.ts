@@ -1,3 +1,4 @@
+import { InjectedAccountWithMeta, InjectedExtension } from "@polkadot/extension-inject/types";
 import { ReactNode } from "react";
 
 interface LinearDecreasing {
@@ -34,7 +35,7 @@ export interface TrackConfig {
 
 export type TrackEntry = [number, TrackConfig];
 
-export type PreferredDirection = 'Aye' | 'Nay';
+export type PreferredDirection = 'Aye' | 'Nay' | 'None';
 
 export interface ExtensionConfig {
   disallowed: string[];
@@ -107,3 +108,32 @@ export enum Conviction {
   Locked5x = "Locked5x",
   Locked6x = "Locked6x",
 }
+
+export type VoteData = {
+  proxy: string;
+  pollIndex: number;
+  amount: number;
+  conviction: Conviction;
+  direction: PreferredDirection;
+};
+
+export type AccountState = {
+  accounts: InjectedAccountWithMeta[];
+  extensions: InjectedExtension[];
+  selectedAccount: InjectedAccountWithMeta | null;
+  selectedExtension: InjectedExtension | null;
+  currentProxy: string | null;
+  gloveProxy: string | null;
+  currentNetwork: string | null;
+  voteData: VoteData[] | null;
+};
+
+export type AccountContextType = AccountState & {
+  setAccounts: (accounts: InjectedAccountWithMeta[]) => void;
+  setExtensions: (extensions: InjectedExtension[]) => void;
+  setSelectedAccount: (account: InjectedAccountWithMeta | null) => void;
+  setSelectedExtension: (extension: InjectedExtension | null) => void;
+  setCurrentProxy: (proxy: string | null) => void;
+  setCurrentNetwork: (network: string | null) => void;
+  setVoteData: (voteData: VoteData[] | null) => void;
+};
