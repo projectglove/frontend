@@ -5,7 +5,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import GloveIcon from '../public/glove.png';
 import Image from "next/image";
 import { useDialog } from "@/lib/providers/dialog";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAccounts } from "@/lib/providers/account";
 import ConnectWallet from "./connect-wallet";
 import dynamic from "next/dynamic";
@@ -25,7 +25,8 @@ export default function Nav() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [visible, setVisible] = useState(true);
   const { openNavMenu, setOpenNavMenu, setOpenGloveProxy } = useDialog();
-  const { currentProxy } = useAccounts();
+  const { currentProxy, selectedAccount } = useAccounts();
+  const isLoggedIn = useRef(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -41,6 +42,12 @@ export default function Nav() {
     }
   }, [lastScrollY]);
 
+  useEffect(() => {
+    if (selectedAccount?.address) {
+      isLoggedIn.current = true;
+    }
+  }, [selectedAccount?.address]);
+
   const handleJoinGlove = () => {
     setOpenGloveProxy(true);
   };
@@ -55,12 +62,12 @@ export default function Nav() {
         <Button onClick={viewDocs} variant="outline" className="px-4 py-2 rounded-md">
           Docs
         </Button>
-        <Button
+        {isLoggedIn.current && <Button
           onClick={handleJoinGlove}
           variant="secondary"
           className="px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary-foreground hover:text-secondary font-bold">
           {currentProxy ? 'Exit Glove' : 'Join Glove'}
-        </Button>
+        </Button>}
       </div>
     );
   };
