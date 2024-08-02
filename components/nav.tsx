@@ -44,12 +44,15 @@ export default function Nav() {
   const handleJoinGlove = () => {
     setOpenGloveProxy(true);
   };
+  const viewDocs = () => {
+    window.open('https://github.com/projectglove/glove-monorepo/?tab=readme-ov-file#building-glove', '_blank');
+  };
 
   const Links = () => {
     return (
       <div className="flex flex-col md:flex-row sm:justify-center space-y-4 md:space-y-0 md:space-x-4">
         <ConnectWallet />
-        <Button variant="outline" className="px-4 py-2 rounded-md">
+        <Button onClick={viewDocs} variant="outline" className="px-4 py-2 rounded-md">
           Docs
         </Button>
         <Button
