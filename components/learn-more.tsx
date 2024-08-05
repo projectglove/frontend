@@ -16,7 +16,7 @@ export default function LearnMore() {
           <div className="bg-background rounded-lg border-2 border-secondary p-6 flex items-center justify-center m-6">
             <div>
               <DialogHeader className="flex justify-between items-center">
-                <DialogTitle className="text-xl font-bold mb-4">Learn More</DialogTitle>
+                <DialogTitle className="text-xl font-bold mb-4">Learn more</DialogTitle>
               </DialogHeader>
               <div>
                 <p className="flex items-center justify-center gap-1">

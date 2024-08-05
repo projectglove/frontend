@@ -35,7 +35,7 @@ export default function ConfirmVote() {
       errors.push('Direction must be selected');
     }
 
-    if (voteAmount === '' || Number(voteAmount) <= 0) {
+    if (!voteAmount || voteAmount === '' || Number(voteAmount) <= 0) {
       errors.push('Amount must be greater than zero');
     }
 
