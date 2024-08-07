@@ -1,10 +1,10 @@
-import { ExtensionConfig } from "./types";
+import { ExtensionConfig, WalletNameEnum } from "./types";
 
 export const extensionConfig: Partial<ExtensionConfig> = {
   disallowed: [],
   supported: [
     {
-      id: 'polkadot-js',
+      id: WalletNameEnum.PJS,
       title: 'PolkadotJS',
       description: 'Basic account injection and signer',
       urls: {
@@ -17,7 +17,7 @@ export const extensionConfig: Partial<ExtensionConfig> = {
       iconUrl: 'pjs-icon.svg',
     },
     {
-      id: 'talisman',
+      id: WalletNameEnum.TALISMAN,
       title: 'Talisman',
       description: 'Talisman is a Polkadot wallet that unlocks a new world of multichain web3 applications in the Paraverse',
       urls: {
@@ -28,6 +28,32 @@ export const extensionConfig: Partial<ExtensionConfig> = {
         },
       },
       iconUrl: 'talisman-icon.svg',
+    },
+    {
+      id: WalletNameEnum.NOVAWALLET,
+      title: 'Nova Wallet',
+      description: 'Nova Wallet',
+      iconUrl: 'nova-icon.svg',
+      urls: {
+        main: '',
+        browsers: {
+          chrome: '',
+          firefox: '',
+        },
+      },
+    },
+    {
+      id: WalletNameEnum.SUBWALLET,
+      title: 'Subwallet',
+      description: 'Subwallet',
+      iconUrl: 'subwallet-icon.svg',
+      urls: {
+        main: '',
+        browsers: {
+          chrome: '',
+          firefox: '',
+        },
+      },
     },
   ],
 };

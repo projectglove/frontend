@@ -138,3 +138,10 @@ export type AccountContextType = AccountState & {
   setCurrentNetwork: (network: string | null) => void;
   setVoteData: (voteData: VoteData[] | null) => void;
 };
+
+export enum WalletNameEnum {
+  SUBWALLET = "subwallet-js",
+  TALISMAN = "talisman",
+  NOVAWALLET = "nova wallet",
+  PJS = "polkadot-js",
+}

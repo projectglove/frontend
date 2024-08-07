@@ -8,6 +8,8 @@ import { useAccounts } from "@/lib/providers/account";
 import { web3Accounts, web3Enable } from "@polkadot/extension-dapp";
 import { APP_NAME, TEST_SS58_FORMAT } from "@/lib/consts";
 import Cookies from "js-cookie";
+import { InjectedExtension } from "@polkadot/extension-inject/types";
+import { WalletNameEnum } from "@/lib/types";
 
 export default function ConnectWallet() {
   const { setOpenExtensions } = useDialog();
@@ -29,7 +31,14 @@ export default function ConnectWallet() {
         const savedSelectedExtension = Cookies.get('activeWallet');
         if (savedSelectedExtension) {
           const parsedSavedSelectedExtension = JSON.parse(savedSelectedExtension);
-          const activeExtension = wallets.find(extension => extension.name === parsedSavedSelectedExtension?.name);
+          let activeExtension: InjectedExtension | undefined = undefined;
+
+          if (parsedSavedSelectedExtension?.name && parsedSavedSelectedExtension?.name.includes(WalletNameEnum.NOVAWALLET)) {
+            // Fix Nova Wallet issue on mobile
+            activeExtension = wallets.find(extension => extension.name === WalletNameEnum.PJS);
+          } else {
+            activeExtension = wallets.find(extension => extension.name === parsedSavedSelectedExtension?.name);
+          }
 
           if (activeExtension) {
             const allAccounts = await web3Accounts({ ss58Format: TEST_SS58_FORMAT, extensions: [activeExtension.name] });
