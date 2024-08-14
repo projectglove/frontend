@@ -1,5 +1,5 @@
 import useSnackbar from "@/lib/providers/snackbar";
-import { Snackbar } from "./snackbar";
+import { Snackbar } from "./ui/snackbar";
 
 export default function Footer() {
   const { messages } = useSnackbar();

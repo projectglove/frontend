@@ -49,7 +49,9 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
             setCurrentNetworkState(data.network_name);
           }
         } catch (error) {
-          console.error('Error fetching proxy account:', error);
+          if (process.env.NODE_ENV !== 'test') {
+            console.error('Error fetching proxy account:', error);
+          }
         }
       };
 

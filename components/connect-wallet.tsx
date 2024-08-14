@@ -31,17 +31,11 @@ export default function ConnectWallet() {
         const savedSelectedExtension = Cookies.get('activeWallet');
         if (savedSelectedExtension) {
           const parsedSavedSelectedExtension = JSON.parse(savedSelectedExtension);
-          let activeExtension: InjectedExtension | undefined = undefined;
-
-          if (parsedSavedSelectedExtension?.name && parsedSavedSelectedExtension?.name.includes(WalletNameEnum.NOVAWALLET)) {
-            // Fix Nova Wallet issue on mobile
-            activeExtension = wallets.find(extension => extension.name === WalletNameEnum.PJS);
-          } else {
-            activeExtension = wallets.find(extension => extension.name === parsedSavedSelectedExtension?.name);
-          }
+          let activeExtension: InjectedExtension[] | undefined = undefined;
+          activeExtension = wallets.filter(extension => extension.name === parsedSavedSelectedExtension?.name);
 
           if (activeExtension) {
-            const allAccounts = await web3Accounts({ ss58Format: TEST_SS58_FORMAT, extensions: [activeExtension.name] });
+            const allAccounts = await web3Accounts({ ss58Format: TEST_SS58_FORMAT, extensions: activeExtension.map(extension => extension.name) });
             setAccounts(allAccounts);
           } else {
             console.log('No active extension found matching:', selectedExtension?.name);

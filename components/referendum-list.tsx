@@ -68,6 +68,7 @@ export function ReferendumList() {
 
   useEffect(() => {
     setVotingOptions(amounts, multipliers, preferredDirection);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [amounts, multipliers, preferredDirection]);
 
   const filteredData = useMemo(() => {
