@@ -6,8 +6,8 @@ import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useDialog } from '@/lib/providers/dialog';
-import { Conviction } from '@/lib/types';
-import useSnackbar from '@/lib/providers/snackbar';
+import { Conviction, ComponentTestProps } from '@/lib/types';
+import { useSnackbar } from '@/lib/providers/snackbar';
 import { useApi } from '@/lib/providers/api';
 import { useAccounts } from '@/lib/providers/account';
 import { randomBytes } from 'crypto';
@@ -15,7 +15,7 @@ import { web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
 import { APP_NAME } from '@/lib/consts';
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 
-export default function ConfirmVote() {
+export default function ConfirmVote({ isTest, callbackTest }: ComponentTestProps) {
   const [loading, setLoading] = useState(false);
   const [inputError, setInputError] = useState<string[]>([]);
   const { openReferendumDialog, setOpenReferendumDialog, referendum, amounts, multipliers, directions: preferredDirection } = useDialog();
@@ -47,6 +47,11 @@ export default function ConfirmVote() {
   }, [amounts, multipliers, preferredDirection, referendum]);
 
   const handleVoteSubmission = async () => {
+    if (isTest) {
+      callbackTest?.();
+      return;
+    }
+
     if (typeof window === 'undefined') return;
     if (!referendum || !api || !selectedAccount || referendum.referendumNumber === 0) return;
 
@@ -232,7 +237,7 @@ export default function ConfirmVote() {
   };
 
   return (
-    <Dialog open={openReferendumDialog} onOpenChange={setOpenReferendumDialog}>
+    <Dialog open={isTest ? true : openReferendumDialog} onOpenChange={setOpenReferendumDialog}>
       <DialogContent className="fixed inset-0 flex items-center justify-center backdrop-blur-sm">
         <div className="bg-background rounded-lg border-2 border-secondary p-6 flex flex-col items-center justify-center m-6">
           <DialogHeader className="flex justify-between items-center">
@@ -251,7 +256,7 @@ export default function ConfirmVote() {
             <Button disabled={loading} variant="outline" className="px-4 py-2 rounded-md w-full" onClick={() => handleVoteRemoval()}>
               Remove Vote
             </Button>
-            <Button disabled={inputError.length > 0 || loading} variant="default" className="px-4 py-2 rounded-md w-full" onClick={() => handleVoteSubmission()}>
+            <Button data-testid="add-vote-button" disabled={inputError.length > 0 || loading} variant="default" className="px-4 py-2 rounded-md w-full" onClick={() => handleVoteSubmission()}>
               {loading ? 'Submitting...' : 'Add/Update Vote'}
             </Button>
           </DialogFooter>

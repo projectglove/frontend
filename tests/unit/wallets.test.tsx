@@ -14,7 +14,7 @@ describe('Wallets Component', () => {
     selectedAccount: null
   });
 
-  it('should prompt user to choose a wallet extension if installed', () => {
+  beforeEach(() => {
     act(() => {
       render(<DialogProvider>
         <AccountProvider>
@@ -22,6 +22,9 @@ describe('Wallets Component', () => {
         </AccountProvider>
       </DialogProvider>);
     });
+  });
+
+  it('should prompt user to choose a wallet extension if installed', () => {
     expect(screen.getByText(/Connect with one of the wallet extensions above./)).toBeInTheDocument();
   });
 });

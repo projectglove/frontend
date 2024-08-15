@@ -1,7 +1,7 @@
 import { APP_NAME } from '@/lib/consts';
 import { useAccounts } from '@/lib/providers/account';
 import { useDialog } from '@/lib/providers/dialog';
-import useSnackbar from '@/lib/providers/snackbar';
+import { useSnackbar } from '@/lib/providers/snackbar';
 import { ApiPromise } from '@polkadot/api';
 import { web3Enable } from '@polkadot/extension-dapp';
 import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';

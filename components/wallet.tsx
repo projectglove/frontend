@@ -8,10 +8,11 @@ import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-d
 import { APP_NAME, TEST_SS58_FORMAT } from '@/lib/consts';
 import Cookies from 'js-cookie';
 import { extensionConfig } from '@/lib/extension-config';
+import { ComponentTestProps } from '@/lib/types';
 
 const config = extensionConfig.supported || [];
 
-export default function Wallet({ wallet, isTest, testSetActiveWallet }: { wallet: InjectedExtension; isTest?: boolean; testSetActiveWallet?: any; }) {
+export default function Wallet({ wallet, isTest, callbackTest }: { wallet: InjectedExtension; } & ComponentTestProps) {
   const { setAccounts, setSelectedExtension: setActiveWallet, selectedExtension: activeWallet } = useAccounts();
   const [iconSrc, setIconSrc] = useState<string>('');
 
@@ -25,8 +26,8 @@ export default function Wallet({ wallet, isTest, testSetActiveWallet }: { wallet
   const walletClickHandler = async (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
-    if (isTest && testSetActiveWallet) {
-      testSetActiveWallet();
+    if (isTest && callbackTest) {
+      callbackTest();
       return;
     }
     if (typeof window !== "undefined") {

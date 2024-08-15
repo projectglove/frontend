@@ -1,23 +1,23 @@
 import { InjectedAccountWithMeta, InjectedExtension } from "@polkadot/extension-inject/types";
 import { ReactNode } from "react";
 
-interface LinearDecreasing {
+export interface LinearDecreasing {
   length: string;
   floor: string;
   ceil: string;
 }
 
-interface Reciprocal {
+export interface Reciprocal {
   factor: number;
   xOffset: number;
   yOffset: number;
 }
 
-interface MinApproval {
+export interface MinApproval {
   LinearDecreasing: LinearDecreasing;
 }
 
-interface MinSupport {
+export interface MinSupport {
   Reciprocal: Reciprocal;
 }
 
@@ -97,6 +97,11 @@ export interface VoteRequest {
   aye: boolean;
   balance: number;
   conviction: Conviction;
+}
+
+export interface ComponentTestProps {
+  isTest?: boolean;
+  callbackTest?: () => void;
 }
 
 export enum Conviction {
