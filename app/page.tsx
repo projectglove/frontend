@@ -4,7 +4,7 @@ import Login from "@/components/login";
 import { ReferendumList } from "@/components/referendum-list";
 import { useAccounts } from "@/lib/providers/account";
 import { useDialog } from "@/lib/providers/dialog";
-import useSnackbar from "@/lib/providers/snackbar";
+import { useSnackbar } from "@/lib/providers/snackbar";
 import { useEffect } from "react";
 
 export default function App() {
@@ -19,6 +19,7 @@ export default function App() {
     } else {
       setOpenLoginScreen(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeAccount]);
 
   if (openLoginScreen) {

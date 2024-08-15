@@ -6,13 +6,14 @@ import { useDialog } from "@/lib/providers/dialog";
 import { useEffect, useState } from "react";
 import { useAccounts } from "@/lib/providers/account";
 import { useApi } from "@/lib/providers/api";
-import useSnackbar from "@/lib/providers/snackbar";
+import { useSnackbar } from "@/lib/providers/snackbar";
 import { web3Enable, web3FromAddress } from "@polkadot/extension-dapp";
 import { APP_NAME } from "@/lib/consts";
 import { InjectedExtension } from "@polkadot/extension-inject/types";
 import { Signer } from "@polkadot/api/types";
+import { ComponentTestProps } from "@/lib/types";
 
-export default function GloveProxy() {
+export default function GloveProxy({ isTest, callbackTest }: ComponentTestProps) {
   const [hasJoined, setHasJoined] = useState(false);
   const { openGloveProxy, setOpenGloveProxy, setOpenLearnMore } = useDialog();
   const api = useApi();
@@ -20,18 +21,25 @@ export default function GloveProxy() {
   const { addMessage } = useSnackbar();
 
   useEffect(() => {
+    if (isTest && callbackTest) {
+      callbackTest();
+    }
     if (currentProxy && (currentProxy !== '' || currentProxy !== null)) {
       setHasJoined(true);
     } else {
       setHasJoined(false);
     }
-  }, [currentProxy]);
+  }, [currentProxy, isTest, callbackTest]);
 
   const handleLearnMore = () => {
     setOpenLearnMore(true);
   };
 
   const handleProxyAssignment = async (event: any) => {
+    if (isTest && callbackTest) {
+      callbackTest();
+    }
+
     event.preventDefault();
     event.stopPropagation();
 
@@ -95,7 +103,7 @@ export default function GloveProxy() {
   };
 
   return (
-    <Dialog open={openGloveProxy} onOpenChange={setOpenGloveProxy}>
+    <Dialog open={isTest ? true : openGloveProxy} onOpenChange={setOpenGloveProxy}>
       <div className="join-dialog flex justify-center">
         <DialogContent className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.8)] backdrop-blur-sm">
           <div className="bg-background rounded-lg border-2 border-secondary p-6 m-6">
@@ -110,7 +118,7 @@ export default function GloveProxy() {
                   </span>
                   <span className="text-xs text-secondary hover:text-secondary/80 cursor-pointer" onClick={handleLearnMore}>ℹ️</span>
                 </p>
-                <Button variant="default" className="px-4 py-2 rounded-md w-full font-medium my-3" onClick={(e) => handleProxyAssignment(e)}>
+                <Button data-testid="glove-proxy-button" variant="default" className="px-4 py-2 rounded-md w-full font-medium my-3" onClick={(e) => handleProxyAssignment(e)}>
                   {hasJoined ? "Exit Glove" : "Join Glove"}
                 </Button>
               </div>
