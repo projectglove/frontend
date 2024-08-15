@@ -4,6 +4,7 @@ import Cookies from 'js-cookie';
 import { useApi } from './api';
 import { useDialog } from './dialog';
 import { AccountContextType, VoteData } from '../types';
+import { isEnvTest } from '../utils';
 
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
 
@@ -20,6 +21,10 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
   const { openGloveProxy } = useDialog();
 
   useEffect(() => {
+    if (isEnvTest()) {
+      return;
+    }
+
     const savedSelectedAccount = Cookies.get('activeAccount');
     if (savedSelectedAccount) {
       setSelectedAccountState(JSON.parse(savedSelectedAccount));

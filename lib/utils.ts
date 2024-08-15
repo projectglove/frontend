@@ -3,6 +3,10 @@ import { twMerge } from "tailwind-merge";
 import { ReferendumData } from "./types";
 import { decodeAddress } from "@polkadot/util-crypto";
 
+export function isEnvTest() {
+  return process.env.NODE_ENV === "test";
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

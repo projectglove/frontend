@@ -3,7 +3,7 @@
 import { memo, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useAccounts } from '@/lib/providers/account';
-import { InjectedExtension } from '@polkadot/extension-inject/types';
+import { InjectedAccounts, InjectedExtension } from '@polkadot/extension-inject/types';
 import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
 import { APP_NAME, TEST_SS58_FORMAT } from '@/lib/consts';
 import Cookies from 'js-cookie';
@@ -11,7 +11,7 @@ import { extensionConfig } from '@/lib/extension-config';
 
 const config = extensionConfig.supported || [];
 
-export default function Wallet({ wallet }: { wallet: InjectedExtension; }) {
+export default function Wallet({ wallet, isTest, testSetActiveWallet }: { wallet: InjectedExtension; isTest?: boolean; testSetActiveWallet?: any; }) {
   const { setAccounts, setSelectedExtension: setActiveWallet, selectedExtension: activeWallet } = useAccounts();
   const [iconSrc, setIconSrc] = useState<string>('');
 
@@ -25,8 +25,13 @@ export default function Wallet({ wallet }: { wallet: InjectedExtension; }) {
   const walletClickHandler = async (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
+    if (isTest && testSetActiveWallet) {
+      testSetActiveWallet();
+      return;
+    }
     if (typeof window !== "undefined") {
       setActiveWallet(wallet);
+      await web3Enable(APP_NAME);
       const allAccounts = await web3Accounts({ ss58Format: TEST_SS58_FORMAT, extensions: [wallet.name] });
       setAccounts(allAccounts);
       Cookies.set('activeWallet', JSON.stringify(wallet));
@@ -34,7 +39,7 @@ export default function Wallet({ wallet }: { wallet: InjectedExtension; }) {
   };
 
   return (
-    <div onClick={walletClickHandler} className={`p-3 flex flex-col items-center justify-center`}>
+    <div data-testid={wallet.name} onClick={walletClickHandler} className={`p-3 flex flex-col items-center justify-center`}>
       <div className="flex flex-col items-center justify-center cursor-glove opacity-60 hover:opacity-100">
         <div className='flex items-center justify-center'>
           {iconSrc && <Image width={45} height={45} src={iconSrc} alt='wallet icon' />}
