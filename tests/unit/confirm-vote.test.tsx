@@ -44,7 +44,7 @@ describe('ConfirmVote Component', () => {
     const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue(mockResponse);
 
     act(() => {
-      fireEvent.click(screen.getByText(/Add\/Update Vote/));
+      fireEvent.click(screen.getByTestId('add-vote-button'));
     });
 
     await waitFor(() => {

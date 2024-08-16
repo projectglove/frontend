@@ -24,12 +24,14 @@ export default function Wallet({ wallet, isTest, callbackTest }: { wallet: Injec
   }, [wallet.name]);
 
   const walletClickHandler = async (event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
     if (isTest && callbackTest) {
       callbackTest();
       return;
     }
+
+    event.preventDefault();
+    event.stopPropagation();
+
     if (typeof window !== "undefined") {
       setActiveWallet(wallet);
       await web3Enable(APP_NAME);

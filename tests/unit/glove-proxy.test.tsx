@@ -7,10 +7,21 @@ import { DialogProvider } from '@/lib/providers/dialog';
 import { AccountProvider } from '@/lib/providers/account';
 import { useApi } from '@/lib/providers/api';
 import { SnackbarProvider } from '@/lib/providers/snackbar';
+import { GlobalWithFetchMock } from 'jest-fetch-mock';
 
+const customGlobal: GlobalWithFetchMock = global as unknown as GlobalWithFetchMock;
+customGlobal.fetch = require('jest-fetch-mock');
+customGlobal.fetchMock = customGlobal.fetch;
 
 describe('GloveProxy Component', () => {
   const mockSetProxy = jest.fn();
+  const mockResponse = {
+    json: () => Promise.resolve({ message: 'Error' }),
+    status: 500,
+    statusText: 'Server Error',
+    ok: false,
+    headers: { get: () => 'application/json' }
+  } as unknown as Response;
 
   beforeEach(() => {
     act(() => {
@@ -28,19 +39,18 @@ describe('GloveProxy Component', () => {
     expect(screen.getByText(/How to join Glove/)).toBeInTheDocument();
   });
 
-  // it('handles proxy assignment', async () => {
-  //   render(<GloveProxy />);
-  //   fireEvent.click(screen.getByText(/Join Glove/));
-  //   await waitFor(() => expect(mockAddMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'info' })));
-  //   expect(mockSetOpenGloveProxy).toHaveBeenCalledWith(false);
-  // });
+  it('clicks the Join Glove button but returns a 500 error', async () => {
+    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue(mockResponse);
 
-  // it('handles errors during proxy assignment', async () => {
-  //   useApi.mockReturnValueOnce({
-  //     isConnected: false
-  //   });
-  //   render(<GloveProxy />);
-  //   fireEvent.click(screen.getByText(/Join Glove/));
-  //   await waitFor(() => expect(mockAddMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' })));
-  // });
+    act(() => {
+      fireEvent.click(screen.getByTestId('glove-proxy-button'));
+    });
+
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalled();
+      expect(mockSetProxy).toHaveBeenCalled();
+    });
+
+    fetchSpy.mockRestore();
+  });
 });

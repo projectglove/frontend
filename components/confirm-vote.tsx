@@ -47,8 +47,8 @@ export default function ConfirmVote({ isTest, callbackTest }: ComponentTestProps
   }, [amounts, multipliers, preferredDirection, referendum]);
 
   const handleVoteSubmission = async () => {
-    if (isTest) {
-      callbackTest?.();
+    if (isTest && callbackTest) {
+      callbackTest();
       return;
     }
 

@@ -21,9 +21,6 @@ export default function GloveProxy({ isTest, callbackTest }: ComponentTestProps)
   const { addMessage } = useSnackbar();
 
   useEffect(() => {
-    if (isTest && callbackTest) {
-      callbackTest();
-    }
     if (currentProxy && (currentProxy !== '' || currentProxy !== null)) {
       setHasJoined(true);
     } else {
@@ -38,6 +35,7 @@ export default function GloveProxy({ isTest, callbackTest }: ComponentTestProps)
   const handleProxyAssignment = async (event: any) => {
     if (isTest && callbackTest) {
       callbackTest();
+      return;
     }
 
     event.preventDefault();
