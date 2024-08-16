@@ -104,6 +104,59 @@ export interface ComponentTestProps {
   callbackTest?: () => void;
 }
 
+export interface Message {
+  id: number;
+  type: "default" | "success" | "error" | "info";
+  title: string;
+  content: string;
+}
+
+export interface SnackbarProps {
+  message: Message;
+  initialOpen?: boolean;
+}
+
+export interface DialogStateType {
+  openLoginScreen: boolean;
+  openNavMenu: boolean;
+  openExtensions: boolean;
+  openGloveProxy: boolean;
+  openVote: boolean;
+  openLearnMore: boolean;
+  openReferendumDialog: boolean;
+  referendum: ReferendumDialogProps | null;
+  amounts: { [key: number]: number | string; };
+  multipliers: { [key: number]: Conviction; };
+  directions: { [key: number]: PreferredDirection; };
+}
+
+export interface DialogActionType {
+  setOpenLoginScreen: (open: boolean) => void;
+  setOpenNavMenu: (openMenu: boolean) => void;
+  setOpenExtensions: (openExtensions: boolean) => void;
+  setOpenGloveProxy: (openJoinGlove: boolean) => void;
+  setOpenVote: (openVote: boolean) => void;
+  setOpenLearnMore: (openLearnMore: boolean) => void;
+  setOpenReferendumDialog: (openReferendumDialog: boolean) => void;
+  setReferendum: (referendum: ReferendumDialogProps | null) => void;
+  setVotingOptions: (amounts: { [key: number]: number | string; }, multipliers: { [key: number]: Conviction; }, directions: { [key: number]: PreferredDirection; }) => void;
+}
+
+export type DialogContextType = DialogStateType & DialogActionType;
+
+export interface SnackbarMessage {
+  id: number;
+  type: 'default' | 'success' | 'error' | 'info';
+  title: string;
+  content: string;
+}
+
+export interface SnackbarContextType {
+  messages: SnackbarMessage[];
+  addMessage: (message: Omit<SnackbarMessage, 'id'>) => void;
+  removeMessage: (id: number) => void;
+}
+
 export enum Conviction {
   None = "None",
   Locked1x = "Locked1x",
