@@ -87,7 +87,7 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
           const timeData = await Promise.all(data.map(res => res.ok ? res.json() : { time: null, error: `${ res.status } (${ res.statusText })` }));
           const indicesArray = Array.from(referenda).map(ref => ref.referendum_index);
           const newTimeRemaining = timeData.reduce((acc, curr, index) => {
-            acc[indicesArray[index]] = 86400;
+            acc[indicesArray[index]] = curr.time ?? 86400; // TODO: remove default time once we have the time from the backend
             return acc;
           }, {});
           setTimeRemaining(newTimeRemaining);
