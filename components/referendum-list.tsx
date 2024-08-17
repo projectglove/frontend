@@ -87,10 +87,7 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
           const timeData = await Promise.all(data.map(res => res.ok ? res.json() : { time: null, error: `${ res.status } (${ res.statusText })` }));
           const indicesArray = Array.from(referenda).map(ref => ref.referendum_index);
           const newTimeRemaining = timeData.reduce((acc, curr, index) => {
-            acc[indicesArray[index]] = curr.time;
-            // if (curr.error) {
-            //   console.error(`Referendum ${ indicesArray[index] }: ${ curr.error }`);
-            // }
+            acc[indicesArray[index]] = 86400;
             return acc;
           }, {});
           setTimeRemaining(newTimeRemaining);
@@ -111,6 +108,25 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     setVotingOptions(amounts, multipliers, preferredDirection, timeRemaining);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [amounts, multipliers, preferredDirection, timeRemaining, isTest]);
+
+  useEffect(() => {
+    if (isTest) {
+      return;
+    }
+    const intervalId = setInterval(() => {
+      setTimeRemaining(prevTimeRemaining => {
+        const newTimeRemaining = { ...prevTimeRemaining };
+        Object.keys(newTimeRemaining).forEach((key: string) => {
+          if (newTimeRemaining[Number(key)] > 0) {
+            newTimeRemaining[Number(key)] -= 1;
+          }
+        });
+        return newTimeRemaining;
+      });
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [isTest]);
 
   const filteredData = useMemo(() => {
     if (isTest) {
@@ -140,7 +156,7 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     const hours = Math.floor((time % (24 * 60 * 60)) / (60 * 60));
     const minutes = Math.floor((time % (60 * 60)) / 60);
     const seconds = Math.floor(time % 60);
-    return `${ days }d ${ hours }h ${ minutes }m ${ seconds }s`;
+    return `Mixing in ${ days }d ${ hours }h ${ minutes }m ${ seconds }s`;
   }, [timeRemaining]);
 
   const handleAmountChange = (index: number, value: string) => {
