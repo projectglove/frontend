@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect, ReactNode, use } from "react";
+import { useState, useMemo, useEffect, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { getPollTimeRemaining, getReferendaList } from "@/lib/utils";
+import { getReferendaList } from "@/lib/utils";
 import VotingOptions from "./voting-options";
 import { useDialog } from "@/lib/providers/dialog";
 import { ComponentTestProps, Conviction, PreferredDirection, ReferendumData } from "@/lib/types";
