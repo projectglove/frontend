@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect, ReactNode } from "react";
+import { useState, useMemo, useEffect, ReactNode, use } from "react";
 import { Button } from "@/components/ui/button";
-import { getReferendaList } from "@/lib/utils";
+import { getPollTimeRemaining, getReferendaList } from "@/lib/utils";
 import VotingOptions from "./voting-options";
 import { useDialog } from "@/lib/providers/dialog";
 import { ComponentTestProps, Conviction, PreferredDirection, ReferendumData } from "@/lib/types";
@@ -10,7 +10,7 @@ import { useAccounts } from "@/lib/providers/account";
 
 export function ReferendumList({ isTest }: ComponentTestProps) {
   const [filter, setFilter] = useState("all");
-  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState<{ [key: number]: number; }>({});
   const [amounts, setAmounts] = useState<{ [key: number]: number | string; }>({});
   const [multipliers, setMultipliers] = useState<{ [key: number]: Conviction; }>({});
   const [preferredDirection, setPreferredDirection] = useState<{ [key: number]: PreferredDirection; }>({});
@@ -18,13 +18,6 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
   const [votedPollIndices, setVotedPollIndices] = useState<Set<number>>(new Set());
   const { setOpenReferendumDialog, setReferendum, setVotingOptions, setOpenGloveProxy } = useDialog();
   const { currentNetwork, voteData, currentProxy, gloveProxy } = useAccounts();
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setTimeRemaining((prevTime) => prevTime - 1);
-  //   }, 1000);
-  //   return () => clearInterval(interval);
-  // }, []);
 
   useEffect(() => {
     if (isTest) {
@@ -70,18 +63,54 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
       voteData.forEach(vote => {
         indexes.add(vote.pollIndex);
       });
+      console.log({ indexes });
       setVotedPollIndices(indexes);
     }
   }, [voteData, isTest]);
-
 
   useEffect(() => {
     if (isTest) {
       return;
     }
-    setVotingOptions(amounts, multipliers, preferredDirection);
+    const loadMixTimes = async () => {
+      try {
+        const data = await Promise.all(Array.from(referenda).map(ref =>
+          fetch(`/api/poll/${ ref.referendum_index }`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+          })
+        ));
+
+        if (data) {
+          const timeData = await Promise.all(data.map(res => res.ok ? res.json() : { time: null, error: `${ res.status } (${ res.statusText })` }));
+          const indicesArray = Array.from(referenda).map(ref => ref.referendum_index);
+          const newTimeRemaining = timeData.reduce((acc, curr, index) => {
+            acc[indicesArray[index]] = curr.time;
+            // if (curr.error) {
+            //   console.error(`Referendum ${ indicesArray[index] }: ${ curr.error }`);
+            // }
+            return acc;
+          }, {});
+          setTimeRemaining(newTimeRemaining);
+        } else {
+          console.error("No data");
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    loadMixTimes();
+  }, [referenda, isTest]);
+
+  useEffect(() => {
+    if (isTest) {
+      return;
+    }
+    setVotingOptions(amounts, multipliers, preferredDirection, timeRemaining);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [amounts, multipliers, preferredDirection, isTest]);
+  }, [amounts, multipliers, preferredDirection, timeRemaining, isTest]);
 
   const filteredData = useMemo(() => {
     if (isTest) {
@@ -102,13 +131,18 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     }).sort((a, b) => b.referendum_index - a.referendum_index);
   }, [filter, referenda, votedPollIndices, isTest]);
 
-  const formatTimeRemaining = () => {
-    const days = Math.floor(timeRemaining / (24 * 60 * 60));
-    const hours = Math.floor((timeRemaining % (24 * 60 * 60)) / (60 * 60));
-    const minutes = Math.floor((timeRemaining % (60 * 60)) / 60);
-    const seconds = Math.floor(timeRemaining % 60);
+  const formatTimeRemaining = useMemo(() => (pollIndex: number) => {
+    const time = timeRemaining[pollIndex];
+    if (!time || time <= 0) {
+      return "Ref Ended";
+    }
+    const days = Math.floor(time / (24 * 60 * 60));
+    const hours = Math.floor((time % (24 * 60 * 60)) / (60 * 60));
+    const minutes = Math.floor((time % (60 * 60)) / 60);
+    const seconds = Math.floor(time % 60);
     return `${ days }d ${ hours }h ${ minutes }m ${ seconds }s`;
-  };
+  }, [timeRemaining]);
+
   const handleAmountChange = (index: number, value: string) => {
     if (value === '') {
       const newAmounts = { ...amounts };
@@ -225,7 +259,7 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
                     {ref.voted ? "Voted" : "Not Voted"}
                   </div>
                   <div className="px-2 py-1 rounded-md bg-muted text-muted-foreground text-xs font-medium">
-                    {timeRemaining <= 0 ? "Ref Ended" : formatTimeRemaining()}
+                    {formatTimeRemaining(ref.referendum_index)}
                   </div>
                 </div>
               </div>

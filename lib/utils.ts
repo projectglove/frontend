@@ -11,6 +11,27 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export async function getPollTimeRemaining(index: number) {
+  const response = await fetch(`https://enclave.test.projectglove.io/poll-info/${ index }`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  console.log('getPollTimeRemaining', { response });
+  if (!response.ok) {
+    throw new Error("Error fetching poll time remaining");
+  }
+  let result;
+  try {
+    result = await response.json();
+  } catch (error) {
+    console.error("Error fetching poll time remaining:", error);
+    throw new Error("Poll is not active");
+  }
+  return result;
+}
+
 export async function getReferendaList(): Promise<ReferendumData[]> {
   const SUBSCAN_API_KEY = process.env.NEXT_PUBLIC_SUBSCAN_API_KEY;
   if (!SUBSCAN_API_KEY) {

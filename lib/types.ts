@@ -139,7 +139,7 @@ export interface DialogActionType {
   setOpenLearnMore: (openLearnMore: boolean) => void;
   setOpenReferendumDialog: (openReferendumDialog: boolean) => void;
   setReferendum: (referendum: ReferendumDialogProps | null) => void;
-  setVotingOptions: (amounts: { [key: number]: number | string; }, multipliers: { [key: number]: Conviction; }, directions: { [key: number]: PreferredDirection; }) => void;
+  setVotingOptions: (amounts: { [key: number]: number | string; }, multipliers: { [key: number]: Conviction; }, directions: { [key: number]: PreferredDirection; }, timeRemaining: { [key: number]: number; }) => void;
 }
 
 export type DialogContextType = DialogStateType & DialogActionType;
