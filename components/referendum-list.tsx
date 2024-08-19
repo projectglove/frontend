@@ -75,11 +75,12 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     const loadMixTimes = async () => {
       try {
         const data = await Promise.all(Array.from(referenda).map(ref =>
-          fetch(`/api/poll/${ ref.referendum_index }`, {
-            method: 'GET',
+          fetch(`/api/poll`, {
+            method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
+            body: JSON.stringify({ index: ref.referendum_index })
           })
         ));
 

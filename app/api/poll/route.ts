@@ -1,9 +1,14 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { pollIndex } = req.query;
+export async function POST(req: Request) {
+  const request = await req.json();
+  let pollIndex;
 
-  console.log('Poll Index:', pollIndex);
+  if (request && request.index) {
+    pollIndex = request.index;
+  } else {
+    throw new Error('No poll index provided');
+  }
 
   try {
     const response = await fetch(`https://enclave.test.projectglove.io/poll-info/${ pollIndex }`, {
@@ -18,9 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const data = await response.json();
-    res.status(200).json(data);
+    return Response.json(data);
   } catch (error) {
-    console.error('Fetch error:', error);
-    res.status(500).json({ message: 'Error fetching poll data', error: (error as Error).message });
+    return Response.json({ message: 'Error fetching poll data', error: (error as Error).message }, { status: 500 });
   }
 }
