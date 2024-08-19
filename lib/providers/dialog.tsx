@@ -1,35 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Conviction, PreferredDirection, ReferendumData, ReferendumDialogProps } from '../types';
+import { Conviction, DialogContextType, PreferredDirection, ReferendumData, ReferendumDialogProps } from '../types';
 
-interface DialogStateType {
-  openLoginScreen: boolean;
-  openNavMenu: boolean;
-  openExtensions: boolean;
-  openGloveProxy: boolean;
-  openVote: boolean;
-  openLearnMore: boolean;
-  openReferendumDialog: boolean;
-  referendum: ReferendumDialogProps | null;
-  amounts: { [key: number]: number | string; };
-  multipliers: { [key: number]: Conviction; };
-  directions: { [key: number]: PreferredDirection; };
-}
-
-interface DialogActionType {
-  setOpenLoginScreen: (open: boolean) => void;
-  setOpenNavMenu: (openMenu: boolean) => void;
-  setOpenExtensions: (openExtensions: boolean) => void;
-  setOpenGloveProxy: (openJoinGlove: boolean) => void;
-  setOpenVote: (openVote: boolean) => void;
-  setOpenLearnMore: (openLearnMore: boolean) => void;
-  setOpenReferendumDialog: (openReferendumDialog: boolean) => void;
-  setReferendum: (referendum: ReferendumDialogProps | null) => void;
-  setVotingOptions: (amounts: { [key: number]: number | string; }, multipliers: { [key: number]: Conviction; }, directions: { [key: number]: PreferredDirection; }) => void;
-}
-
-type DialogContextType = DialogStateType & DialogActionType;
 const DialogContext = createContext<DialogContextType | undefined>(undefined);
 
 export const DialogProvider = ({ children }: { children: ReactNode; }) => {

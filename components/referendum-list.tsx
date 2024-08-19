@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { getReferendaList } from "@/lib/utils";
 import VotingOptions from "./voting-options";
 import { useDialog } from "@/lib/providers/dialog";
-import { Conviction, PreferredDirection, ReferendumData } from "@/lib/types";
+import { ComponentTestProps, Conviction, PreferredDirection, ReferendumData } from "@/lib/types";
 import { useAccounts } from "@/lib/providers/account";
 
-export function ReferendumList() {
+export function ReferendumList({ isTest }: ComponentTestProps) {
   const [filter, setFilter] = useState("all");
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [amounts, setAmounts] = useState<{ [key: number]: number | string; }>({});
@@ -27,6 +27,9 @@ export function ReferendumList() {
   // }, []);
 
   useEffect(() => {
+    if (isTest) {
+      return;
+    }
     const load = async () => {
       const data = await getReferendaList();
       if (data) {
@@ -35,9 +38,12 @@ export function ReferendumList() {
       }
     };
     load();
-  }, []);
+  }, [isTest]);
 
   useEffect(() => {
+    if (isTest) {
+      return;
+    }
     if (voteData) {
       const newAmounts: { [key: number]: number | string; } = {};
       const newMultipliers: { [key: number]: Conviction; } = {};
@@ -53,9 +59,12 @@ export function ReferendumList() {
       setMultipliers(newMultipliers);
       setPreferredDirection(newPreferredDirections);
     }
-  }, [voteData]);
+  }, [voteData, isTest]);
 
   useEffect(() => {
+    if (isTest) {
+      return;
+    }
     if (voteData) {
       const indexes = new Set<number>();
       voteData.forEach(vote => {
@@ -63,15 +72,21 @@ export function ReferendumList() {
       });
       setVotedPollIndices(indexes);
     }
-  }, [voteData]);
+  }, [voteData, isTest]);
 
 
   useEffect(() => {
+    if (isTest) {
+      return;
+    }
     setVotingOptions(amounts, multipliers, preferredDirection);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [amounts, multipliers, preferredDirection]);
+  }, [amounts, multipliers, preferredDirection, isTest]);
 
   const filteredData = useMemo(() => {
+    if (isTest) {
+      return [];
+    }
     return referenda.map(ref => ({
       ...ref,
       voted: votedPollIndices.has(ref.referendum_index)
@@ -85,7 +100,7 @@ export function ReferendumList() {
           return true;
       }
     }).sort((a, b) => b.referendum_index - a.referendum_index);
-  }, [filter, referenda, votedPollIndices]);
+  }, [filter, referenda, votedPollIndices, isTest]);
 
   const formatTimeRemaining = () => {
     const days = Math.floor(timeRemaining / (24 * 60 * 60));

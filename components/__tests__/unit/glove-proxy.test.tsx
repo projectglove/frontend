@@ -5,7 +5,6 @@ import { jest, describe, it, expect, beforeEach, } from '@jest/globals';
 import GloveProxy from '@/components/glove-proxy';
 import { DialogProvider } from '@/lib/providers/dialog';
 import { AccountProvider } from '@/lib/providers/account';
-import { useApi } from '@/lib/providers/api';
 import { SnackbarProvider } from '@/lib/providers/snackbar';
 import { GlobalWithFetchMock } from 'jest-fetch-mock';
 

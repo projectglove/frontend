@@ -1,17 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-
-interface SnackbarMessage {
-  id: number;
-  type: 'default' | 'success' | 'error' | 'info';
-  title: string;
-  content: string;
-}
-
-interface SnackbarContextType {
-  messages: SnackbarMessage[];
-  addMessage: (message: Omit<SnackbarMessage, 'id'>) => void;
-  removeMessage: (id: number) => void;
-}
+import { SnackbarContextType, SnackbarMessage } from '../types';
 
 const SnackbarContext = createContext<SnackbarContextType | undefined>(undefined);
 

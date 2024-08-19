@@ -2,18 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-
-interface Message {
-  id: number;
-  type: "default" | "success" | "error" | "info";
-  title: string;
-  content: string;
-}
-
-interface SnackbarProps {
-  message: Message;
-  initialOpen?: boolean;
-}
+import { SnackbarProps } from "@/lib/types";
 
 export function Snackbar({ message, initialOpen = false }: SnackbarProps) {
   const [isOpen, setIsOpen] = useState(initialOpen);
