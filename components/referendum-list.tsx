@@ -27,12 +27,16 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     const load = async () => {
       const data = await getReferendaList();
       if (data) {
-        console.log('referenda', data);
         const treasuryRefs = data.filter(ref => ref.call_module.includes('Treasury') && (ref.status.includes('Submitted') || ref.status.includes('Decision')));
         setReferenda(treasuryRefs);
       }
     };
+
+    const intervalId = setInterval(load, 120000);
+
     load();
+
+    return () => clearInterval(intervalId);
   }, [isTest]);
 
   useEffect(() => {
@@ -94,7 +98,6 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
             }
             return acc;
           }, {});
-          console.log('newTimeRemaining', newTimeRemaining);
           setTimeRemaining(newTimeRemaining);
         } else {
           console.error("No data");
