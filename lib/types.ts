@@ -174,6 +174,8 @@ export type VoteData = {
   amount: number;
   conviction: Conviction;
   direction: PreferredDirection;
+  extrinsicHash?: string;
+  voteTime?: number;
 };
 
 export type AccountState = {

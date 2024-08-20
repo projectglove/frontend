@@ -2,10 +2,10 @@
 
 import { useState, useMemo, useEffect, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { getReferendaList } from "@/lib/utils";
+import { getReferendaList, getVotesByPollIndex } from "@/lib/utils";
 import VotingOptions from "./voting-options";
 import { useDialog } from "@/lib/providers/dialog";
-import { ComponentTestProps, Conviction, PreferredDirection, ReferendumData } from "@/lib/types";
+import { ComponentTestProps, Conviction, PreferredDirection, ReferendumData, VoteData } from "@/lib/types";
 import { useAccounts } from "@/lib/providers/account";
 
 export function ReferendumList({ isTest }: ComponentTestProps) {
@@ -16,8 +16,9 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
   const [preferredDirection, setPreferredDirection] = useState<{ [key: number]: PreferredDirection; }>({});
   const [referenda, setReferenda] = useState<ReferendumData[]>([]);
   const [votedPollIndices, setVotedPollIndices] = useState<Set<number>>(new Set());
+  const [subscanVotes, setSubscanVotes] = useState<{ [pollIndex: number]: VoteData; }>({});
   const { setOpenReferendumDialog, setReferendum, setVotingOptions, setOpenGloveProxy } = useDialog();
-  const { currentNetwork, voteData, currentProxy, gloveProxy } = useAccounts();
+  const { currentNetwork, voteData, currentProxy, gloveProxy, selectedAccount } = useAccounts();
 
   useEffect(() => {
     if (isTest) {
@@ -26,7 +27,8 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     const load = async () => {
       const data = await getReferendaList();
       if (data) {
-        const treasuryRefs = data.filter(ref => ref.call_module.includes('Treasury') && ref.status.includes('Submitted'));
+        console.log('referenda', data);
+        const treasuryRefs = data.filter(ref => ref.call_module.includes('Treasury') && (ref.status.includes('Submitted') || ref.status.includes('Decision')));
         setReferenda(treasuryRefs);
       }
     };
@@ -63,7 +65,6 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
       voteData.forEach(vote => {
         indexes.add(vote.pollIndex);
       });
-      console.log({ indexes });
       setVotedPollIndices(indexes);
     }
   }, [voteData, isTest]);
@@ -85,12 +86,15 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
         ));
 
         if (data) {
-          const timeData = await Promise.all(data.map(res => res.ok ? res.json() : { time: null, error: `${ res.status } (${ res.statusText })` }));
+          const timeData = await Promise.all(data.map(res => res.ok ? res.json() : { mixing_time: null, error: `${ res.status } (${ res.statusText })` }));
           const indicesArray = Array.from(referenda).map(ref => ref.referendum_index);
-          const newTimeRemaining = timeData.reduce((acc, curr, index) => {
-            acc[indicesArray[index]] = curr.time ?? 86400; // TODO: remove default time once we have the time from the backend
+          const newTimeRemaining: { [key: number]: number; } = timeData.reduce((acc, curr, index) => {
+            if (curr.mixing_time && 'timestamp' in curr.mixing_time) {
+              acc[indicesArray[index]] = curr.mixing_time.timestamp;
+            }
             return acc;
           }, {});
+          console.log('newTimeRemaining', newTimeRemaining);
           setTimeRemaining(newTimeRemaining);
         } else {
           console.error("No data");
@@ -99,8 +103,40 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
         console.error(error);
       }
     };
-    loadMixTimes();
+
+    const intervalId = setInterval(loadMixTimes, 30000); // Poll every 30 seconds
+
+    loadMixTimes(); // Initial call to load times immediately
+
+    return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [referenda, isTest]);
+
+  useEffect(() => {
+    if (isTest) {
+      return;
+    }
+    if (!selectedAccount || !currentProxy) {
+      return;
+    }
+
+    const loadVotes = async () => {
+      for (const pollIndex of Array.from(votedPollIndices)) {
+        const votes = await getVotesByPollIndex(currentProxy, selectedAccount.address, pollIndex);
+        if (votes) {
+          const mappedVote: VoteData = votes.map((vote: { amount: number; status: string; extrinsic_index: string; referendum_index: number; voting_time: number; }) => ({
+            amount: vote.amount,
+            direction: vote.status,
+            pollIndex,
+            extrinsicHash: vote.extrinsic_index,
+            voteTime: vote.voting_time
+          }));
+          setSubscanVotes(prevVotes => ({ ...prevVotes, [pollIndex]: mappedVote }));
+        }
+      }
+    };
+
+    loadVotes();
+  }, [isTest, referenda, currentProxy, selectedAccount, votedPollIndices]);
 
   useEffect(() => {
     if (isTest) {
@@ -149,15 +185,18 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
   }, [filter, referenda, votedPollIndices, isTest]);
 
   const formatTimeRemaining = useMemo(() => (pollIndex: number) => {
-    const time = timeRemaining[pollIndex];
-    if (!time || time <= 0) {
-      return "Ref Ended";
+    const timeInSeconds = timeRemaining[pollIndex];
+    if (!timeInSeconds || timeInSeconds <= 0) {
+      return "Active";
     }
-    const days = Math.floor(time / (24 * 60 * 60));
-    const hours = Math.floor((time % (24 * 60 * 60)) / (60 * 60));
-    const minutes = Math.floor((time % (60 * 60)) / 60);
-    const seconds = Math.floor(time % 60);
-    return `Mixing in ${ days }d ${ hours }h ${ minutes }m ${ seconds }s`;
+
+    const weeks = Math.floor(timeInSeconds / (7 * 24 * 60 * 60));
+    const days = Math.floor((timeInSeconds % (7 * 24 * 60 * 60)) / (24 * 60 * 60));
+    const hours = Math.floor((timeInSeconds % (24 * 60 * 60)) / (60 * 60));
+    const minutes = Math.floor((timeInSeconds % (60 * 60)) / 60);
+    const seconds = timeInSeconds % 60;
+
+    return `Mixing in ${ weeks }w ${ days }d ${ hours }h ${ minutes }m ${ seconds }s`;
   }, [timeRemaining]);
 
   const handleAmountChange = (index: number, value: string) => {
@@ -174,6 +213,7 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
       console.error("Invalid input for amount");
     }
   };
+
   const handleMultiplierChange = (index: number, value: Conviction | '') => {
     if (value === '') {
       const newMultipliers = { ...multipliers };
@@ -185,11 +225,13 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
       setMultipliers(newMultipliers);
     }
   };
+
   const handlePreferredDirectionChange = (index: number, value: PreferredDirection) => {
     const newPreferredDirection = { ...preferredDirection };
     newPreferredDirection[index] = value;
     setPreferredDirection(newPreferredDirection);
   };
+
   const handleOpenReferendumDialog = (index: number, referendumNumber: number, confirmVote: ReactNode) => {
     setReferendum(null);
     if (currentProxy && currentProxy === gloveProxy) {
@@ -279,6 +321,7 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
                     {formatTimeRemaining(ref.referendum_index)}
                   </div>
                 </div>
+                <code>{JSON.stringify(subscanVotes[ref.referendum_index])}</code>
               </div>
               <div key={index} className="hover:bg-muted/50 transition-colors rounded-md hover:cursor-glove" onClick={() => handleOpenReferendumDialog(ref.referendum_index, ref.referendum_index, <ConfirmVote />)}>
                 <div className="pointer-events-none">

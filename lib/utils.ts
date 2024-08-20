@@ -11,6 +11,42 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export async function getVotesByPollIndex(proxyAddress: string, accountAddress: string, pollIndex: number) {
+  const SUBSCAN_API_KEY = process.env.NEXT_PUBLIC_SUBSCAN_API_KEY;
+  if (!SUBSCAN_API_KEY) {
+    throw new Error("SUBSCAN_API_KEY is not set");
+  }
+
+  const headers = new Headers({
+    "Content-Type": "application/json",
+    "X-API-Key": SUBSCAN_API_KEY
+  });
+  const body = JSON.stringify({
+    "row": 100,
+    "account": proxyAddress,
+    "referendum_index": pollIndex,
+    "valid": "valid",
+  });
+
+  const requestOptions = {
+    method: 'POST',
+    headers,
+    body
+  };
+
+  let result;
+  try {
+    const response = await fetch("https://rococo.api.subscan.io/api/scan/referenda/votes", requestOptions);
+    result = await response.json();
+  } catch (error) {
+    console.error("Error fetching referendum votes:", error);
+  }
+  if (result.data && result.data.list) {
+    result.data.list = result.data.list.filter((item: any) => 'delegate_account' in item && item.delegate_account === accountAddress);
+  }
+  return result.data.list;
+}
+
 export async function getReferendaList(): Promise<ReferendumData[]> {
   const SUBSCAN_API_KEY = process.env.NEXT_PUBLIC_SUBSCAN_API_KEY;
   if (!SUBSCAN_API_KEY) {

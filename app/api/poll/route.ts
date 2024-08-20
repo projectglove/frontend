@@ -17,7 +17,6 @@ export async function POST(req: Request) {
         'Content-Type': 'application/json'
       }
     });
-    console.log({ response });
     if (!response.ok) {
       throw new Error(`Failed to fetch data for poll index ${ pollIndex }`);
     }
