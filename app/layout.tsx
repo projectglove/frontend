@@ -16,6 +16,7 @@ import Footer from '@/components/footer';
 import LearnMore from '@/components/learn-more';
 import dynamic from 'next/dynamic';
 import AccountSelector from '@/components/account-selector';
+import VoteHistory from '@/components/vote-history';
 // import ConfirmVote from '@/components/confirm-vote';
 
 interface LayoutProps {
@@ -66,6 +67,7 @@ export default function Layout({ children }: LayoutProps) {
                   <GloveProxy />
                   <LearnMore />
                   <AccountSelector />
+                  <VoteHistory />
                   <Nav />
                   <div className="pt-[73px]">
                     {children}

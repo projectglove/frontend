@@ -1,7 +1,10 @@
 export const APP_NAME = 'Glove';
 
-export const TEST_WSS = "wss://rococo-rpc.polkadot.io"; // Rococo
-export const PROD_WSS = "wss://kusama-rpc.polkadot.io"; // Kusama
+export const GLOVE_URL = "https://enclave.test.projectglove.io";
+export const TEST_SUBSCAN_NETWORK = "rococo";
+export const PROD_SUBSCAN_NETWORK = "kusama";
+export const TEST_WSS = `wss://${ TEST_SUBSCAN_NETWORK }-rpc.polkadot.io`; // Rococo
+export const PROD_WSS = `wss://${ PROD_SUBSCAN_NETWORK }-rpc.polkadot.io`; // Kusama
 export const TEST_SS58_FORMAT = 42; // Rococo
 export const PROD_SS58_FORMAT = 2; // Kusama
 export const TEST_DECIMALS = 12; // Rococo

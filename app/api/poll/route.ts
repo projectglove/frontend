@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { GLOVE_URL } from '@/lib/consts';
 
 export async function POST(req: Request) {
   const request = await req.json();
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const response = await fetch(`https://enclave.test.projectglove.io/poll-info/${ pollIndex }`, {
+    const response = await fetch(`${ GLOVE_URL }/poll-info/${ pollIndex }`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
