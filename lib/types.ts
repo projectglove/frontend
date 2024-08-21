@@ -124,6 +124,7 @@ export interface DialogStateType {
   openVote: boolean;
   openLearnMore: boolean;
   openReferendumDialog: boolean;
+  openVoteHistory: boolean;
   referendum: ReferendumDialogProps | null;
   amounts: { [key: number]: number | string; };
   multipliers: { [key: number]: Conviction; };
@@ -138,6 +139,7 @@ export interface DialogActionType {
   setOpenVote: (openVote: boolean) => void;
   setOpenLearnMore: (openLearnMore: boolean) => void;
   setOpenReferendumDialog: (openReferendumDialog: boolean) => void;
+  setOpenVoteHistory: (openVoteHistory: boolean) => void;
   setReferendum: (referendum: ReferendumDialogProps | null) => void;
   setVotingOptions: (amounts: { [key: number]: number | string; }, multipliers: { [key: number]: Conviction; }, directions: { [key: number]: PreferredDirection; }, timeRemaining: { [key: number]: number; }) => void;
 }
@@ -177,6 +179,20 @@ export type VoteData = {
   extrinsicHash?: string;
   voteTime?: number;
 };
+
+export type SubscanVoteData = {
+  amount: number;
+  status: string;
+  extrinsic_index: string;
+  referendum_index: number;
+  voting_time: number;
+};
+
+export interface VoteHistoryProps {
+  votes: VoteData[];
+  isOpen: boolean;
+  onClose: () => void;
+}
 
 export type AccountState = {
   accounts: InjectedAccountWithMeta[];

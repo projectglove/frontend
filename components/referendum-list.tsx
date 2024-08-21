@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { getReferendaList, getVotesByPollIndex } from "@/lib/utils";
 import VotingOptions from "./voting-options";
 import { useDialog } from "@/lib/providers/dialog";
-import { ComponentTestProps, Conviction, PreferredDirection, ReferendumData, VoteData } from "@/lib/types";
+import { ComponentTestProps, Conviction, SubscanVoteData, PreferredDirection, ReferendumData, VoteData } from "@/lib/types";
 import { useAccounts } from "@/lib/providers/account";
 
 export function ReferendumList({ isTest }: ComponentTestProps) {
@@ -98,6 +98,7 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
             }
             return acc;
           }, {});
+          console.log('newTimeRemaining', newTimeRemaining);
           setTimeRemaining(newTimeRemaining);
         } else {
           console.error("No data");
@@ -107,11 +108,11 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
       }
     };
 
-    const intervalId = setInterval(loadMixTimes, 30000); // Poll every 30 seconds
+    const intervalId = setInterval(loadMixTimes, 30000);
 
-    loadMixTimes(); // Initial call to load times immediately
+    loadMixTimes();
 
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
   }, [referenda, isTest]);
 
   useEffect(() => {
@@ -126,13 +127,15 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
       for (const pollIndex of Array.from(votedPollIndices)) {
         const votes = await getVotesByPollIndex(currentProxy, selectedAccount.address, pollIndex);
         if (votes) {
-          const mappedVote: VoteData = votes.map((vote: { amount: number; status: string; extrinsic_index: string; referendum_index: number; voting_time: number; }) => ({
-            amount: vote.amount,
-            direction: vote.status,
-            pollIndex,
-            extrinsicHash: vote.extrinsic_index,
-            voteTime: vote.voting_time
-          }));
+          const mappedVote: VoteData = votes.filter((vote: SubscanVoteData) => vote.referendum_index === pollIndex)
+            .map((vote: SubscanVoteData) => ({
+              amount: vote.amount,
+              direction: vote.status,
+              pollIndex,
+              extrinsicHash: vote.extrinsic_index,
+              voteTime: vote.voting_time
+            }));
+          console.log('mappedVote', mappedVote);
           setSubscanVotes(prevVotes => ({ ...prevVotes, [pollIndex]: mappedVote }));
         }
       }

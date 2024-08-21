@@ -23,8 +23,7 @@ export async function getVotesByPollIndex(proxyAddress: string, accountAddress: 
   });
   const body = JSON.stringify({
     "row": 100,
-    "account": proxyAddress,
-    "referendum_index": pollIndex,
+    "account": accountAddress,
     "valid": "valid",
   });
 
@@ -42,7 +41,7 @@ export async function getVotesByPollIndex(proxyAddress: string, accountAddress: 
     console.error("Error fetching referendum votes:", error);
   }
   if (result.data && result.data.list) {
-    result.data.list = result.data.list.filter((item: any) => 'delegate_account' in item && item.delegate_account === accountAddress);
+    // result.data.list = result.data.list.filter((item: any) => 'delegate_account' in item && item.delegate_account === accountAddress);
   }
   return result.data.list;
 }
