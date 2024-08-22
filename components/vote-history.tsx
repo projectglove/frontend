@@ -77,20 +77,24 @@ const VoteHistory = () => {
             <div className="w-full lg:w-1/3">
               <h3 className="text-md font-bold">Votes made via Glove</h3>
               <ul className="flex flex-col mb-5">
-                {Object.keys(subscanVotes).map((key: string, index: number) => {
-                  const data = (subscanVotes[key as unknown as number] as any)[0] as unknown as VoteData;
-                  if (!data) {
-                    return null;
-                  }
-                  return (
-                    <li key={key} className="text-sm hover:text-white/80 hover:underline underline-offset-2 cursor-pointer flex items-center gap-1">
-                      <a href={`https://${ TEST_SUBSCAN_NETWORK }.subscan.io/extrinsic/${ data.extrinsicHash }`} target="_blank" rel="noopener noreferrer">
-                        {data.direction.includes('Aye') ? '+' : '-'} You voted <span className={`${ data.direction.includes('Aye') ? 'text-green-500' : 'text-red-500' }`}>{data.direction.slice(0, -1)}</span> on ref #{data.pollIndex}
-                      </a>
-                      <ExternalLinkIcon className="w-3 h-3" />
-                    </li>
-                  );
-                })}
+                {Object.keys(subscanVotes).length === 0 ? (
+                  <li className="text-sm text-gray-500">No voting history available yet.</li>
+                ) : (
+                  Object.keys(subscanVotes).map((key: string, index: number) => {
+                    const data = (subscanVotes[key as unknown as number] as any)[0] as unknown as VoteData;
+                    if (!data) {
+                      return null;
+                    }
+                    return (
+                      <li key={key} className="text-sm hover:text-white/80 hover:underline underline-offset-2 cursor-pointer flex items-center gap-1">
+                        <a href={`https://${ TEST_SUBSCAN_NETWORK }.subscan.io/extrinsic/${ data.extrinsicHash }`} target="_blank" rel="noopener noreferrer">
+                          {data.direction.includes('Aye') ? '+' : '-'} You voted <span className={`${ data.direction.includes('Aye') ? 'text-green-500' : 'text-red-500' }`}>{data.direction.slice(0, -1)}</span> on ref #{data.pollIndex}
+                        </a>
+                        <ExternalLinkIcon className="w-3 h-3" />
+                      </li>
+                    );
+                  })
+                )}
               </ul>
             </div>
             <div>
