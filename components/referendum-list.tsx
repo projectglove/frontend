@@ -190,7 +190,10 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
   }, [filter, referenda, votedPollIndices, isTest]);
 
   const formatTimeRemaining = useMemo(() => (pollIndex: number) => {
-    const timeInSeconds = timeRemaining[pollIndex];
+    const futureTimestampInSeconds = timeRemaining[pollIndex];
+    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+    let timeInSeconds = futureTimestampInSeconds - currentTimeInSeconds;
+
     if (!timeInSeconds || timeInSeconds <= 0) {
       return "Active";
     }
@@ -201,7 +204,14 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     const minutes = Math.floor((timeInSeconds % (60 * 60)) / 60);
     const seconds = timeInSeconds % 60;
 
-    return `Mixing in ${ weeks }w ${ days }d ${ hours }h ${ minutes }m ${ seconds }s`;
+    let timeString = 'Mixing in ';
+    timeString += weeks > 0 ? `${ weeks }w ` : '';
+    timeString += days > 0 ? `${ days }d ` : '';
+    timeString += hours > 0 ? `${ hours }h ` : '';
+    timeString += minutes > 0 ? `${ minutes }m ` : '';
+    timeString += seconds > 0 ? `${ seconds }s` : '';
+
+    return timeString.trim();
   }, [timeRemaining]);
 
   const handleAmountChange = (index: number, value: string) => {
