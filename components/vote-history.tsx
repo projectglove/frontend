@@ -95,7 +95,7 @@ const VoteHistory = () => {
             </div>
             <div>
               <h3 className="text-md font-bold">Verifying your on-chain vote</h3>
-              <p className="text-sm">Follow these steps to verify that your vote was genuinely mixed by Glove:</p>
+              <p className="text-sm">In a terminal, follow these steps to verify that your vote was genuinely mixed by Glove:</p>
               <ul className="text-xs mt-3">
                 <li className="flex flex-col gap-1 mb-3">
                   <span>1) Clone the repository</span>
@@ -119,7 +119,7 @@ const VoteHistory = () => {
                   </span>
                   <div className="bg-secondary p-2 rounded-md whitespace-pre-wrap">target/release/client --glove-url={GLOVE_URL} verify-vote --account={selectedAccount?.address} --poll-index={`{REFERENDUM_INDEX}`}</div>
                 </li>
-                <li className="mb-3">5) For more information, please read <a href="https://github.com/projectglove/glove-monorepo#verifying-glove-votes" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-white/80 underline underline-offset-2">https://github.com/projectglove/glove-monorepo#verifying-glove-votes</a></li>
+                <li className="mb-3">For more information, please read: <a href="https://github.com/projectglove/glove-monorepo#verifying-glove-votes" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-white/80 underline underline-offset-2">https://github.com/projectglove/glove-monorepo#verifying-glove-votes</a></li>
               </ul>
             </div>
           </div>
