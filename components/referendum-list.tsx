@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useMemo, useEffect, ReactNode } from "react";
+import { useState, useMemo, useEffect, ReactNode, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { getReferendaList, getVotesByPollIndex } from "@/lib/utils";
 import VotingOptions from "./voting-options";
 import { useDialog } from "@/lib/providers/dialog";
 import { ComponentTestProps, Conviction, SubscanVoteData, PreferredDirection, ReferendumData, VoteData } from "@/lib/types";
 import { useAccounts } from "@/lib/providers/account";
+import { useApi } from "@/lib/providers/api";
+import { time } from "console";
 
 export function ReferendumList({ isTest }: ComponentTestProps) {
   const [filter, setFilter] = useState("all");
-  const [timeRemaining, setTimeRemaining] = useState<{ [key: number]: number; }>({});
+  const [elapsedTime, setElapsedTime] = useState<{ [key: number]: number; }>({});
+  const [blockNumbers, setBlockNumbers] = useState<{ [key: number]: number; }>({});
   const [amounts, setAmounts] = useState<{ [key: number]: number | string; }>({});
   const [multipliers, setMultipliers] = useState<{ [key: number]: Conviction; }>({});
   const [preferredDirection, setPreferredDirection] = useState<{ [key: number]: PreferredDirection; }>({});
@@ -19,6 +22,8 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
   const [subscanVotes, setSubscanVotes] = useState<{ [pollIndex: number]: VoteData; }>({});
   const { setOpenReferendumDialog, setReferendum, setVotingOptions, setOpenGloveProxy, setOpenVoteHistory } = useDialog();
   const { currentNetwork, voteData, currentProxy, gloveProxy, selectedAccount } = useAccounts();
+  const api = useApi();
+  const originalTimestamps = useRef<{ [key: number]: number; }>({});
 
   useEffect(() => {
     if (isTest) {
@@ -90,15 +95,20 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
         ));
 
         if (data) {
+          const currentTime = Math.floor(Date.now() / 1000);
           const timeData = await Promise.all(data.map(res => res.ok ? res.json() : { mixing_time: null, error: `${ res.status } (${ res.statusText })` }));
           const indicesArray = Array.from(referenda).map(ref => ref.referendum_index);
           const newTimeRemaining: { [key: number]: number; } = timeData.reduce((acc, curr, index) => {
             if (curr.mixing_time && 'timestamp' in curr.mixing_time) {
               acc[indicesArray[index]] = curr.mixing_time.timestamp;
             }
+            if (curr.mixing_time && 'block_number' in curr.mixing_time) {
+              setBlockNumbers(prevBlockNumbers => ({ ...prevBlockNumbers, [indicesArray[index]]: curr.mixing_time.block_number }));
+            }
             return acc;
           }, {});
-          setTimeRemaining(newTimeRemaining);
+          originalTimestamps.current = newTimeRemaining;
+          setElapsedTime(newTimeRemaining);
         } else {
           console.error("No data");
         }
@@ -147,22 +157,30 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     if (isTest) {
       return;
     }
-    setVotingOptions(amounts, multipliers, preferredDirection, timeRemaining);
+    setVotingOptions(amounts, multipliers, preferredDirection, elapsedTime);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [amounts, multipliers, preferredDirection, timeRemaining, isTest]);
+  }, [amounts, multipliers, preferredDirection, elapsedTime, isTest]);
 
   useEffect(() => {
     if (isTest) {
       return;
     }
+
     const intervalId = setInterval(() => {
-      setTimeRemaining(prevTimeRemaining => {
+      const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+      setElapsedTime(prevTimeRemaining => {
         const newTimeRemaining = { ...prevTimeRemaining };
-        Object.keys(newTimeRemaining).forEach((key: string) => {
-          if (newTimeRemaining[Number(key)] > 0) {
-            newTimeRemaining[Number(key)] -= 1;
-          }
+
+        Object.keys(originalTimestamps.current).forEach(key => {
+          const index = Number(key);
+          const futureTimestampInSeconds = originalTimestamps.current[index];
+          const timeRemaining = futureTimestampInSeconds - currentTimeInSeconds;
+
+          newTimeRemaining[index] = futureTimestampInSeconds - 1;
         });
+
+        console.log(newTimeRemaining);
+
         return newTimeRemaining;
       });
     }, 1000);
@@ -190,11 +208,12 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
   }, [filter, referenda, votedPollIndices, isTest]);
 
   const formatTimeRemaining = useMemo(() => (pollIndex: number) => {
-    const futureTimestampInSeconds = timeRemaining[pollIndex];
-    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
-    let timeInSeconds = futureTimestampInSeconds - currentTimeInSeconds;
 
-    if (!timeInSeconds || timeInSeconds <= 0) {
+    const currentTime = Math.floor(Date.now() / 1000);
+    let timeInSeconds = currentTime - originalTimestamps.current[pollIndex];
+    console.log('timeInSeconds', timeInSeconds);
+
+    if (!timeInSeconds) {
       return "Active";
     }
 
@@ -204,15 +223,16 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     const minutes = Math.floor((timeInSeconds % (60 * 60)) / 60);
     const seconds = timeInSeconds % 60;
 
-    let timeString = 'Mixing in ';
+    let timeString = 'Decision started ';
     timeString += weeks > 0 ? `${ weeks }w ` : '';
     timeString += days > 0 ? `${ days }d ` : '';
     timeString += hours > 0 ? `${ hours }h ` : '';
     timeString += minutes > 0 ? `${ minutes }m ` : '';
     timeString += seconds > 0 ? `${ seconds }s` : '';
+    timeString += ' ago';
 
     return timeString.trim();
-  }, [timeRemaining]);
+  }, []);
 
   const handleAmountChange = (index: number, value: string) => {
     if (value === '') {
@@ -261,10 +281,10 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     <div className="p-4 h-scroll-73 flex flex-col">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2 relative">
         <div>
-          <h1 className="text-2xl font-bold">Active Treasury Refs</h1>
+          <h1 className="text-2xl font-bold">Active Treasury Referenda</h1>
           <h6 className="flex flex-row text-xs gap-1 cursor-pointer text-gray-400 hover:text-primary hover:underline items-center mt-1 mb-3 underline-offset-2" onClick={() => setOpenVoteHistory(true)}>
             <VoteHistoryIcon className="w-2 h-2" />
-            <span>View/Verify Vote History</span>
+            <span>Previous Vote History</span>
           </h6>
         </div>
         <div className="flex items-center justify-center space-x-2 flex-wrap gap-2">
@@ -296,7 +316,7 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
         </div>
       </div>
       <div className={filteredData.length > 0 ? "border rounded-md overflow-auto" : "border-0 rounded-md overflow-auto"}>
-        {filteredData.map((ref, index) => {
+        {filteredData.length > 0 ? filteredData.map((ref, index) => {
           const ConfirmVote = () =>
             <VotingOptions
               key={ref.referendum_index}
@@ -350,7 +370,11 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
               </div>
             </div>
           );
-        })}
+        }) : (
+          <div className="flex items-center justify-center">
+            <span className="text-muted-foreground">No referenda available at this time.</span>
+          </div>
+        )}
       </div>
     </div>
   );

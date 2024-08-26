@@ -41,10 +41,8 @@ export async function getVotesByPollIndex(proxyAddress: string, accountAddress: 
   } catch (error) {
     console.error("Error fetching referendum votes:", error);
   }
-  if (result.data && result.data.list) {
-    // result.data.list = result.data.list.filter((item: any) => 'delegate_account' in item && item.delegate_account === accountAddress);
-  }
-  return result.data.list;
+
+  return result.data && result.data.list;
 }
 
 export async function getReferendaList(): Promise<ReferendumData[]> {
