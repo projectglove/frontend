@@ -7,7 +7,7 @@ export interface InputProps
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, ...props }, ref) => {
-    const id = new Date().getTime().toString();
+    const id = `${ new Date().getTime() }-${ Math.random().toString(36).substring(2, 11) }`;
     return (
       <input
         id={id}

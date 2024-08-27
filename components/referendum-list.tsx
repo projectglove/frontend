@@ -1,30 +1,29 @@
 "use client";
 
-import { useState, useMemo, useEffect, ReactNode } from "react";
+import { useState, useMemo, useEffect, ReactNode, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { getReferendaList } from "@/lib/utils";
+import { getReferendaList, getVotesByPollIndex } from "@/lib/utils";
 import VotingOptions from "./voting-options";
 import { useDialog } from "@/lib/providers/dialog";
-import { ComponentTestProps, Conviction, PreferredDirection, ReferendumData } from "@/lib/types";
+import { ComponentTestProps, Conviction, SubscanVoteData, PreferredDirection, ReferendumData, VoteData } from "@/lib/types";
 import { useAccounts } from "@/lib/providers/account";
+import { useApi } from "@/lib/providers/api";
+import { time } from "console";
 
 export function ReferendumList({ isTest }: ComponentTestProps) {
   const [filter, setFilter] = useState("all");
-  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState<{ [key: number]: number; }>({});
+  const [blockNumbers, setBlockNumbers] = useState<{ [key: number]: number; }>({});
   const [amounts, setAmounts] = useState<{ [key: number]: number | string; }>({});
   const [multipliers, setMultipliers] = useState<{ [key: number]: Conviction; }>({});
   const [preferredDirection, setPreferredDirection] = useState<{ [key: number]: PreferredDirection; }>({});
   const [referenda, setReferenda] = useState<ReferendumData[]>([]);
   const [votedPollIndices, setVotedPollIndices] = useState<Set<number>>(new Set());
-  const { setOpenReferendumDialog, setReferendum, setVotingOptions, setOpenGloveProxy } = useDialog();
-  const { currentNetwork, voteData, currentProxy, gloveProxy } = useAccounts();
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setTimeRemaining((prevTime) => prevTime - 1);
-  //   }, 1000);
-  //   return () => clearInterval(interval);
-  // }, []);
+  const [subscanVotes, setSubscanVotes] = useState<{ [pollIndex: number]: VoteData; }>({});
+  const { setOpenReferendumDialog, setReferendum, setVotingOptions, setOpenGloveProxy, setOpenVoteHistory } = useDialog();
+  const { currentNetwork, voteData, currentProxy, gloveProxy, selectedAccount } = useAccounts();
+  const api = useApi();
+  const originalTimestamps = useRef<{ [key: number]: number; }>({});
 
   useEffect(() => {
     if (isTest) {
@@ -33,11 +32,16 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     const load = async () => {
       const data = await getReferendaList();
       if (data) {
-        const treasuryRefs = data.filter(ref => ref.call_module.includes('Treasury') && ref.status.includes('Submitted'));
+        const treasuryRefs = data.filter(ref => ref.call_module.includes('Treasury') && (ref.status.includes('Submitted') || ref.status.includes('Decision')));
         setReferenda(treasuryRefs);
       }
     };
+
+    const intervalId = setInterval(load, 120000);
+
     load();
+
+    return () => clearInterval(intervalId);
   }, [isTest]);
 
   useEffect(() => {
@@ -74,14 +78,115 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     }
   }, [voteData, isTest]);
 
+  useEffect(() => {
+    if (isTest) {
+      return;
+    }
+    const loadMixTimes = async () => {
+      try {
+        const data = await Promise.all(Array.from(referenda).map(ref =>
+          fetch(`/api/poll`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ index: ref.referendum_index })
+          })
+        ));
+
+        if (data) {
+          const currentTime = Math.floor(Date.now() / 1000);
+          const timeData = await Promise.all(data.map(res => res.ok ? res.json() : { mixing_time: null, error: `${ res.status } (${ res.statusText })` }));
+          const indicesArray = Array.from(referenda).map(ref => ref.referendum_index);
+          const newTimeRemaining: { [key: number]: number; } = timeData.reduce((acc, curr, index) => {
+            if (curr.mixing_time && 'timestamp' in curr.mixing_time) {
+              acc[indicesArray[index]] = curr.mixing_time.timestamp;
+            }
+            if (curr.mixing_time && 'block_number' in curr.mixing_time) {
+              setBlockNumbers(prevBlockNumbers => ({ ...prevBlockNumbers, [indicesArray[index]]: curr.mixing_time.block_number }));
+            }
+            return acc;
+          }, {});
+          originalTimestamps.current = newTimeRemaining;
+          setElapsedTime(newTimeRemaining);
+        } else {
+          console.error("No data");
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    const intervalId = setInterval(loadMixTimes, 30000);
+
+    loadMixTimes();
+
+    return () => clearInterval(intervalId);
+  }, [referenda, isTest]);
+
+  // useEffect(() => {
+  //   if (isTest) {
+  //     return;
+  //   }
+  //   if (!selectedAccount || !currentProxy) {
+  //     return;
+  //   }
+
+  //   const loadVotes = async () => {
+  //     for (const pollIndex of Array.from(votedPollIndices)) {
+  //       const votes = await getVotesByPollIndex(currentProxy, selectedAccount.address, pollIndex);
+  //       if (votes) {
+  //         const mappedVote: VoteData = votes.filter((vote: SubscanVoteData) => vote.referendum_index === pollIndex)
+  //           .map((vote: SubscanVoteData) => ({
+  //             amount: vote.amount,
+  //             direction: vote.status,
+  //             pollIndex,
+  //             extrinsicHash: vote.extrinsic_index,
+  //             voteTime: vote.voting_time
+  //           }));
+  //         console.log('mappedVote', mappedVote);
+  //         setSubscanVotes(prevVotes => ({ ...prevVotes, [pollIndex]: mappedVote }));
+  //       }
+  //     }
+  //   };
+
+  //   loadVotes();
+  // }, [isTest, referenda, currentProxy, selectedAccount, votedPollIndices]);
 
   useEffect(() => {
     if (isTest) {
       return;
     }
-    setVotingOptions(amounts, multipliers, preferredDirection);
+    setVotingOptions(amounts, multipliers, preferredDirection, elapsedTime);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [amounts, multipliers, preferredDirection, isTest]);
+  }, [amounts, multipliers, preferredDirection, elapsedTime, isTest]);
+
+  useEffect(() => {
+    if (isTest) {
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+      setElapsedTime(prevTimeRemaining => {
+        const newTimeRemaining = { ...prevTimeRemaining };
+
+        Object.keys(originalTimestamps.current).forEach(key => {
+          const index = Number(key);
+          const futureTimestampInSeconds = originalTimestamps.current[index];
+          const timeRemaining = futureTimestampInSeconds - currentTimeInSeconds;
+
+          newTimeRemaining[index] = futureTimestampInSeconds - 1;
+        });
+
+        console.log(newTimeRemaining);
+
+        return newTimeRemaining;
+      });
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [isTest]);
 
   const filteredData = useMemo(() => {
     if (isTest) {
@@ -102,13 +207,33 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     }).sort((a, b) => b.referendum_index - a.referendum_index);
   }, [filter, referenda, votedPollIndices, isTest]);
 
-  const formatTimeRemaining = () => {
-    const days = Math.floor(timeRemaining / (24 * 60 * 60));
-    const hours = Math.floor((timeRemaining % (24 * 60 * 60)) / (60 * 60));
-    const minutes = Math.floor((timeRemaining % (60 * 60)) / 60);
-    const seconds = Math.floor(timeRemaining % 60);
-    return `${ days }d ${ hours }h ${ minutes }m ${ seconds }s`;
-  };
+  const formatTimeRemaining = useMemo(() => (pollIndex: number) => {
+
+    const currentTime = Math.floor(Date.now() / 1000);
+    let timeInSeconds = currentTime - originalTimestamps.current[pollIndex];
+    console.log('timeInSeconds', timeInSeconds);
+
+    if (!timeInSeconds) {
+      return "Active";
+    }
+
+    const weeks = Math.floor(timeInSeconds / (7 * 24 * 60 * 60));
+    const days = Math.floor((timeInSeconds % (7 * 24 * 60 * 60)) / (24 * 60 * 60));
+    const hours = Math.floor((timeInSeconds % (24 * 60 * 60)) / (60 * 60));
+    const minutes = Math.floor((timeInSeconds % (60 * 60)) / 60);
+    const seconds = timeInSeconds % 60;
+
+    let timeString = 'Decision started ';
+    timeString += weeks > 0 ? `${ weeks }w ` : '';
+    timeString += days > 0 ? `${ days }d ` : '';
+    timeString += hours > 0 ? `${ hours }h ` : '';
+    timeString += minutes > 0 ? `${ minutes }m ` : '';
+    timeString += seconds > 0 ? `${ seconds }s` : '';
+    timeString += ' ago';
+
+    return timeString.trim();
+  }, []);
+
   const handleAmountChange = (index: number, value: string) => {
     if (value === '') {
       const newAmounts = { ...amounts };
@@ -123,6 +248,7 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
       console.error("Invalid input for amount");
     }
   };
+
   const handleMultiplierChange = (index: number, value: Conviction | '') => {
     if (value === '') {
       const newMultipliers = { ...multipliers };
@@ -134,11 +260,13 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
       setMultipliers(newMultipliers);
     }
   };
+
   const handlePreferredDirectionChange = (index: number, value: PreferredDirection) => {
     const newPreferredDirection = { ...preferredDirection };
     newPreferredDirection[index] = value;
     setPreferredDirection(newPreferredDirection);
   };
+
   const handleOpenReferendumDialog = (index: number, referendumNumber: number, confirmVote: ReactNode) => {
     setReferendum(null);
     if (currentProxy && currentProxy === gloveProxy) {
@@ -152,7 +280,13 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
   return (
     <div className="p-4 h-scroll-73 flex flex-col">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2 relative">
-        <h1 className="text-2xl font-bold">Active Treasury Refs</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Active Treasury Referenda</h1>
+          <h6 className="flex flex-row text-xs gap-1 cursor-pointer text-gray-400 hover:text-primary hover:underline items-center mt-1 mb-3 underline-offset-2" onClick={() => setOpenVoteHistory(true)}>
+            <VoteHistoryIcon className="w-2 h-2" />
+            <span>Previous Vote History</span>
+          </h6>
+        </div>
         <div className="flex items-center justify-center space-x-2 flex-wrap gap-2">
           <div className="flex items-center justify-center gap-2">
             <FilterIcon className="w-5 h-5" />
@@ -182,7 +316,7 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
         </div>
       </div>
       <div className={filteredData.length > 0 ? "border rounded-md overflow-auto" : "border-0 rounded-md overflow-auto"}>
-        {filteredData.map((ref, index) => {
+        {filteredData.length > 0 ? filteredData.map((ref, index) => {
           const ConfirmVote = () =>
             <VotingOptions
               key={ref.referendum_index}
@@ -225,7 +359,7 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
                     {ref.voted ? "Voted" : "Not Voted"}
                   </div>
                   <div className="px-2 py-1 rounded-md bg-muted text-muted-foreground text-xs font-medium">
-                    {timeRemaining <= 0 ? "Ref Ended" : formatTimeRemaining()}
+                    {formatTimeRemaining(ref.referendum_index)}
                   </div>
                 </div>
               </div>
@@ -236,13 +370,17 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
               </div>
             </div>
           );
-        })}
+        }) : (
+          <div className="flex items-center justify-center">
+            <span className="text-muted-foreground">No referenda available at this time.</span>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function ExternalLinkIcon(props: any) {
+export function ExternalLinkIcon(props: any) {
   return (
     <svg
       {...props}
@@ -280,5 +418,14 @@ function FilterIcon(props: any) {
     >
       <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
     </svg>
+  );
+}
+
+function VoteHistoryIcon(props: any) {
+  return (
+    <svg width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path fillRule="evenodd" clipRule="evenodd" d="M8.50073 2.23345C5.03941 2.23345 2.23345 5.03941 2.23345 8.50073C2.23345 11.9621 5.0394 14.768 8.50073 14.768C11.4708 14.768 13.9583 12.7021 14.6046 9.92883L14.3035 10.2299C13.9975 10.5358 13.5015 10.5357 13.1956 10.2297C12.8896 9.92375 12.8897 9.42772 13.1957 9.12182L14.7629 7.555C14.9098 7.4081 15.1091 7.32559 15.3169 7.32561C15.5247 7.32564 15.7239 7.4082 15.8708 7.55514L17.4372 9.12196C17.7431 9.42794 17.7431 9.92397 17.4371 10.2299C17.1311 10.5358 16.6351 10.5357 16.3292 10.2297L16.1762 10.0767C15.4468 13.648 12.2876 16.3348 8.50073 16.3348C4.17408 16.3348 0.666626 12.8274 0.666626 8.50073C0.666626 4.17408 4.17408 0.666626 8.50073 0.666626C11.3758 0.666626 13.8883 2.21589 15.2502 4.52138C15.4703 4.8939 15.3467 5.37428 14.9741 5.59434C14.6016 5.8144 14.1212 5.69081 13.9012 5.31829C12.8094 3.4702 10.7991 2.23345 8.50073 2.23345ZM8.50073 3.80027C8.93339 3.80027 9.28414 4.15101 9.28414 4.58368V8.08146L11.2855 9.41571C11.6455 9.65571 11.7428 10.1421 11.5028 10.5021C11.2628 10.8621 10.7764 10.9594 10.4164 10.7194L8.06617 9.15257C7.84823 9.00727 7.71732 8.76266 7.71732 8.50073V4.58368C7.71732 4.15101 8.06806 3.80027 8.50073 3.80027Z" fill="currentColor" />
+    </svg>
+
   );
 }
