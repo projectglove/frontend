@@ -179,8 +179,6 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
           newTimeRemaining[index] = futureTimestampInSeconds - 1;
         });
 
-        console.log(newTimeRemaining);
-
         return newTimeRemaining;
       });
     }, 1000);
@@ -211,7 +209,6 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
 
     const currentTime = Math.floor(Date.now() / 1000);
     let timeInSeconds = currentTime - originalTimestamps.current[pollIndex];
-    console.log('timeInSeconds', timeInSeconds);
 
     if (!timeInSeconds) {
       return "Active";

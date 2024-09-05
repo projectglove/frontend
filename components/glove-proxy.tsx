@@ -14,10 +14,11 @@ import { Signer } from "@polkadot/api/types";
 import { ComponentTestProps } from "@/lib/types";
 
 export default function GloveProxy({ isTest, callbackTest }: ComponentTestProps) {
+  const [loading, setLoading] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
   const { openGloveProxy, setOpenGloveProxy, setOpenLearnMore } = useDialog();
   const api = useApi();
-  const { selectedAccount: activeAccount, currentProxy, gloveProxy } = useAccounts();
+  const { selectedAccount: activeAccount, currentProxy, gloveProxy, setCurrentProxy } = useAccounts();
   const { addMessage } = useSnackbar();
 
   useEffect(() => {
@@ -40,6 +41,8 @@ export default function GloveProxy({ isTest, callbackTest }: ComponentTestProps)
 
     event.preventDefault();
     event.stopPropagation();
+
+    setLoading(true);
 
     await web3Enable(APP_NAME);
 
@@ -80,6 +83,10 @@ export default function GloveProxy({ isTest, callbackTest }: ComponentTestProps)
                 content: !hasJoined ? "Your proxy has been assigned to the Glove Operator." : "Your proxy has been removed from the Glove Operator.",
                 type: "success",
               });
+              setLoading(false);
+              if (!hasJoined) {
+                setCurrentProxy(null);
+              }
             }
           });
         } else {
@@ -96,6 +103,7 @@ export default function GloveProxy({ isTest, callbackTest }: ComponentTestProps)
           content: "There was an error with the transaction",
           type: "error",
         });
+        setLoading(false);
       }
     }
   };
@@ -116,12 +124,12 @@ export default function GloveProxy({ isTest, callbackTest }: ComponentTestProps)
                   </span>
                   <span className="text-xs text-secondary hover:text-secondary/80 cursor-pointer" onClick={handleLearnMore}>ℹ️</span>
                 </p>
-                <Button data-testid="glove-proxy-button" variant="default" className="px-4 py-2 rounded-md w-full font-medium my-3" onClick={(e) => handleProxyAssignment(e)}>
-                  {hasJoined ? "Exit Glove" : "Join Glove"}
+                <Button data-testid="glove-proxy-button" variant="default" className="px-4 py-2 rounded-md w-full font-medium my-3" onClick={(e) => handleProxyAssignment(e)} disabled={loading}>
+                  {hasJoined ? "Exit Glove" : loading ? "Please wait..." : "Join Glove"}
                 </Button>
               </div>
               <DialogFooter>
-                <Button variant="ghost" className="px-4 py-2 rounded-md w-full" onClick={() => setOpenGloveProxy(false)}>
+                <Button variant="ghost" className="px-4 py-2 rounded-md w-full" onClick={() => setOpenGloveProxy(false)} disabled={loading}>
                   Cancel
                 </Button>
               </DialogFooter>

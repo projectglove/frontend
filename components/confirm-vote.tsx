@@ -128,8 +128,8 @@ export default function ConfirmVote({ isTest, callbackTest }: ComponentTestProps
         },
         body: JSON.stringify(signedVoteRequest),
       });
-
-      if (response.status === 200 && response.statusText === 'OK') {
+      console.log('response', response);
+      if (response.status === 200) {
         addMessage({ type: 'success', content: `Vote submitted successfully to mixer but it may take a while longer to finalize.`, title: '' });
         setOpenReferendumDialog(false);
         const newVote = {
