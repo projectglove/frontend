@@ -12,7 +12,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export async function getVotesByPollIndex(proxyAddress: string, accountAddress: string, pollIndex: number) {
-  const SUBSCAN_API_KEY = process.env.SUBSCAN_API_KEY;
+  const SUBSCAN_API_KEY = process.env.NEXT_PUBLIC_SUBSCAN_API_KEY;
   if (!SUBSCAN_API_KEY) {
     throw new Error("SUBSCAN_API_KEY is not set");
   }
@@ -46,7 +46,7 @@ export async function getVotesByPollIndex(proxyAddress: string, accountAddress: 
 }
 
 export async function getReferendaList(): Promise<ReferendumData[]> {
-  const SUBSCAN_API_KEY = process.env.SUBSCAN_API_KEY;
+  const SUBSCAN_API_KEY = process.env.NEXT_PUBLIC_SUBSCAN_API_KEY;
   if (!SUBSCAN_API_KEY) {
     throw new Error("SUBSCAN_API_KEY is not set");
   }
