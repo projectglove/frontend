@@ -216,7 +216,7 @@ export default function ConfirmVote({ isTest, callbackTest }: ComponentTestProps
         body: JSON.stringify(signedRemoveVoteRequest),
       });
 
-      if (response.status === 200 && response.statusText === 'OK') {
+      if (response.status === 200) {
         addMessage({ type: 'success', content: `Vote removal was successfully submitted (if a matching vote was actually found)!`, title: '' });
         setOpenReferendumDialog(false);
         const updatedVoteData = voteData?.filter(vote => vote.pollIndex !== pollIndex);
