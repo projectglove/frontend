@@ -76,7 +76,7 @@ const VoteHistory = () => {
           <div className="flex flex-col justify-between lg:flex-row mb-6 gap-4 max-h-[400px] overflow-y-auto">
             <div className="w-full lg:w-1/3">
               <h3 className="text-md font-bold">Votes made via Glove</h3>
-              <p className="text-xs text-gray-400 mb-3">Votes shown here are based only on active referenda in their Submitted or Decision phases, prior to vote mixing.</p>
+              <p className="text-xs text-gray-400 mb-3">Votes shown here are based only on active treasury referenda, prior to vote mixing.</p>
               <ul className="flex flex-col mb-5">
                 {Object.keys(subscanVotes).length === 0 ? (
                   <li className="text-sm text-gray-500">No voting history available yet.</li>
