@@ -76,6 +76,7 @@ const VoteHistory = () => {
           <div className="flex flex-col justify-between lg:flex-row mb-6 gap-4 max-h-[400px] overflow-y-auto">
             <div className="w-full lg:w-1/3">
               <h3 className="text-md font-bold">Votes made via Glove</h3>
+              <p className="text-xs text-gray-400 mb-3">Votes shown here are based only on active referenda in their Submitted or Decision phases, prior to vote mixing.</p>
               <ul className="flex flex-col mb-5">
                 {Object.keys(subscanVotes).length === 0 ? (
                   <li className="text-sm text-gray-500">No voting history available yet.</li>
@@ -98,7 +99,9 @@ const VoteHistory = () => {
               </ul>
             </div>
             <div>
-              <h3 className="text-md font-bold">Verifying your on-chain vote</h3>
+              <h3 className="text-md font-bold">Verifying your mixed on-chain vote</h3>
+              <p className="text-xs text-gray-400 mb-3">Manual on-chain vote verification of the Glove mixer can only be achieved after vote mixing occurs during the Decision phase. Learn more here: <a href="https://github.com/projectglove/glove-monorepo#verifying-glove-votes" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-white/80 underline underline-offset-2">https://github.com/projectglove/glove-monorepo#verifying-glove-votes</a>
+              </p>
               <p className="text-sm">In a terminal, follow these steps to verify that your vote was genuinely mixed by Glove:</p>
               <ul className="text-xs mt-3">
                 <li className="flex flex-col gap-1 mb-3">
@@ -123,7 +126,6 @@ const VoteHistory = () => {
                   </span>
                   <div className="bg-secondary p-2 rounded-md whitespace-pre-wrap">target/release/client --glove-url={GLOVE_URL} verify-vote --account={selectedAccount?.address} --poll-index={`{REFERENDUM_INDEX}`}</div>
                 </li>
-                <li className="mb-3">For more information, please read: <a href="https://github.com/projectglove/glove-monorepo#verifying-glove-votes" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-white/80 underline underline-offset-2">https://github.com/projectglove/glove-monorepo#verifying-glove-votes</a></li>
               </ul>
             </div>
           </div>
