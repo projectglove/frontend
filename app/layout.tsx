@@ -17,6 +17,7 @@ import LearnMore from '@/components/learn-more';
 import dynamic from 'next/dynamic';
 import AccountSelector from '@/components/account-selector';
 import VoteHistory from '@/components/vote-history';
+import VerifyVote from '@/components/verify-vote';
 // import ConfirmVote from '@/components/confirm-vote';
 
 interface LayoutProps {
@@ -63,10 +64,11 @@ export default function Layout({ children }: LayoutProps) {
             <AccountProvider>
               <SnackbarProvider>
                 <div>
+                  <AccountSelector />
                   <ConfirmVote />
                   <GloveProxy />
                   <LearnMore />
-                  <AccountSelector />
+                  <VerifyVote />
                   <VoteHistory />
                   <Nav />
                   <div className="pt-[73px]">

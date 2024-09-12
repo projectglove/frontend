@@ -14,6 +14,7 @@ export const DialogProvider = ({ children }: { children: ReactNode; }) => {
   const [openLearnMore, setOpenLearnMore] = useState(false);
   const [openReferendumDialog, setOpenReferendumDialog] = useState<boolean>(false);
   const [openVoteHistory, setOpenVoteHistory] = useState<boolean>(false);
+  const [openVerifyVote, setOpenVerifyVote] = useState<boolean>(false);
   const [referendum, setReferendum] = useState<ReferendumDialogProps | null>(null);
   const [amounts, setAmounts] = useState<{ [key: number]: number | string; }>({});
   const [multipliers, setMultipliers] = useState<{ [key: number]: Conviction; }>({});
@@ -48,7 +49,9 @@ export const DialogProvider = ({ children }: { children: ReactNode; }) => {
       directions,
       setVotingOptions,
       openVoteHistory,
-      setOpenVoteHistory
+      setOpenVoteHistory,
+      openVerifyVote,
+      setOpenVerifyVote,
     }}>
       {children}
     </DialogContext.Provider>

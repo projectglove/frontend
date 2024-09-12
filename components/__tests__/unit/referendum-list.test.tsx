@@ -20,7 +20,7 @@ describe('ReferendumList Component', () => {
   });
 
   it('displays referendum list and page elements', () => {
-    expect(screen.getByText(/Active Treasury Refs/)).toBeInTheDocument();
+    expect(screen.getByText(/Active Treasury Referenda/)).toBeInTheDocument();
     expect(screen.getByText(/All/)).toBeInTheDocument();
   });
 });

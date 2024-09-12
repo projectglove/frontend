@@ -16,6 +16,7 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
   const [currentProxy, setCurrentProxyState] = useState<string | null>(null);
   const [currentNetwork, setCurrentNetworkState] = useState<string | null>(null);
   const [gloveProxy, setGloveProxyState] = useState<string | null>(null);
+  const [attestationBundle, setAttestationBundleState] = useState<string | null>(null);
   const [voteData, setVoteDataState] = useState<VoteData[] | null>(null);
   const api = useApi();
   const { openGloveProxy } = useDialog();
@@ -52,6 +53,10 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
 
           if ('network_name' in data && data.network_name) {
             setCurrentNetworkState(data.network_name);
+          }
+
+          if ('attestation_bundle' in data && data.attestation_bundle) {
+            setAttestationBundleState(data.attestation_bundle);
           }
         } catch (error) {
           if (process.env.NODE_ENV !== 'test') {
@@ -150,6 +155,10 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     }
   };
 
+  const setAttestationBundle = (bundle: string | null) => {
+    setAttestationBundleState(bundle);
+  };
+
   const providerValue = useMemo(() => ({
     accounts,
     extensions,
@@ -165,8 +174,10 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     currentNetwork,
     setCurrentNetwork,
     voteData,
-    setVoteData
-  }), [accounts, extensions, selectedAccount, selectedExtension, currentProxy, gloveProxy, currentNetwork, voteData]);
+    setVoteData,
+    attestationBundle,
+    setAttestationBundle
+  }), [accounts, extensions, selectedAccount, selectedExtension, currentProxy, gloveProxy, currentNetwork, voteData, attestationBundle]);
 
   return (
     <AccountContext.Provider value={providerValue}>

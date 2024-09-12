@@ -14,7 +14,7 @@ export default function Wallets({ defaultValue }: { defaultValue?: any; }) {
   const activeAccountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setAccountState({ accounts, extensions, selectedExtension: activeWallet, selectedAccount: activeAccount, currentProxy: null, gloveProxy: null, currentNetwork: null, voteData: null });
+    setAccountState({ accounts, extensions, selectedExtension: activeWallet, selectedAccount: activeAccount, currentProxy: null, gloveProxy: null, currentNetwork: null, voteData: null, attestationBundle: null });
   }, [accounts, extensions, activeWallet, activeAccount]);
 
   useEffect(() => {
