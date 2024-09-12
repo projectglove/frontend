@@ -123,13 +123,13 @@ const VoteHistory = () => {
                     <span>
                       3) Build the client
                     </span>
-                    <div className="bg-secondary p-2 rounded-md">cargo build --release</div>
+                    <div className="bg-secondary p-2 rounded-md">cargo build</div>
                   </li>
                   <li className="flex flex-col gap-1 mb-3">
                     <span>
                       4) Run the client by pasting the following command below into your terminal (replace {`{REFERENDUM_INDEX}`} with the number of the referendum):
                     </span>
-                    <div className="bg-secondary p-2 rounded-md whitespace-pre-wrap">cargo run --bin client --release -- --glove-url={GLOVE_URL} verify-vote --account={selectedAccount?.address} --poll-index={`{REFERENDUM_INDEX}`}</div>
+                    <div className="bg-secondary p-2 rounded-md whitespace-pre-wrap">cargo run --bin client -- --glove-url={GLOVE_URL} verify-vote --account={selectedAccount?.address} --poll-index={`{REFERENDUM_INDEX}`}</div>
                   </li>
                   <li className="flex flex-col mb-3">
                     <span className="mb-2">
@@ -164,6 +164,14 @@ const VoteHistory = () => {
                       4) Run the client by pasting the following command below into your terminal (replace {`{REFERENDUM_INDEX}`} with the number of the referendum):
                     </span>
                     <div className="bg-secondary p-2 rounded-md whitespace-pre-wrap">target/release/client --glove-url={GLOVE_URL} verify-vote --account={selectedAccount?.address} --poll-index={`{REFERENDUM_INDEX}`}</div>
+                  </li>
+                  <li className="flex flex-col mb-3">
+                    <span className="mb-2">
+                      5) Verify your PCR-0 output below:
+                    </span>
+                    <div>
+                      <Button variant="outline" size="sm" onClick={() => setOpenVerifyVote(true)}>Verify</Button>
+                    </div>
                   </li>
                 </ul>
               </>}
