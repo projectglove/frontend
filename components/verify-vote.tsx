@@ -35,13 +35,13 @@ const VerifyVote = () => {
             <DialogTitle className="text-xl font-bold mb-4">Verify your PCR-0 output</DialogTitle>
           </DialogHeader>
           <div className="max-h-[400px] max-w-[400px] overflow-y-auto mb-5">
-            <p className="text-xs text-gray-400 mb-3">If you are verifying your vote from macOS, paste your PCR-0 output here to check if it matches the value from the Glove enclave at the time when your vote was mixed.</p>
+            <p className="text-xs text-gray-400 mb-3">Paste your PCR-0 output here to check if it matches the value from the Glove enclave at the time when your vote was mixed.</p>
             <div className="flex flex-col gap-3">
               <Input value={pcrOutput} onChange={handleInputChange} />
               <Button onClick={verifyOutput}>Submit</Button>
               {pcrOutput && isMatch !== null && (
                 <p className={`text-xs mb-3 ${ isMatch ? 'text-green-500' : 'text-red-500' }`}>
-                  {isMatch ? 'PCR-0 output found! This proves that your vote was genuinely mixed by the Glove enclave.' : 'PCR-0 output does not match. The mixing of your vote was not done from a genuine Glove enclave.'}
+                  {isMatch ? 'The PCR-0 output matches the one from the attestation bundle! This proves that your vote was genuinely mixed by the Glove enclave.' : 'The PCR-0 output does not match the one from the attestation bundle. The mixing of your vote was not done from a genuine Glove enclave.'}
                 </p>
               )}
             </div>
