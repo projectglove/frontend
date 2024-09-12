@@ -98,17 +98,21 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
   }, [api, gloveProxy, selectedAccount?.address, openGloveProxy]);
 
   useEffect(() => {
-    const savedVoteData = Cookies.get('voteData');
-    if (savedVoteData) {
-      const voteData: VoteData[] = JSON.parse(savedVoteData);
-      const relevantVoteData = voteData.filter((vote) => vote.address === selectedAccount?.address);
+    const accountAddress = selectedAccount?.address;
+    const savedVoteData = accountAddress ? Cookies.get(`voteData-${ accountAddress }`) : null;
+    let relevantVoteData: VoteData[] = [];
 
-      if (relevantVoteData.length > 0) {
-        setVoteDataState(relevantVoteData);
-        Cookies.set('voteData', JSON.stringify(relevantVoteData));
-      } else {
-        setVoteDataState([]);
-      }
+    if (savedVoteData) {
+      relevantVoteData = JSON.parse(savedVoteData);
+    } else {
+      relevantVoteData = [];
+    }
+
+    setVoteDataState(relevantVoteData);
+
+    // Update the cookie for the specific account address
+    if (accountAddress) {
+      Cookies.set(`voteData-${ accountAddress }`, JSON.stringify(relevantVoteData));
     }
   }, [selectedAccount?.address, currentProxy]);
 
@@ -148,10 +152,11 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
 
   const setVoteData = (voteData: VoteData[] | null) => {
     setVoteDataState(voteData);
-    if (voteData) {
-      Cookies.set('voteData', JSON.stringify(voteData));
-    } else {
-      Cookies.remove('voteData');
+    const accountAddress = selectedAccount?.address;
+    if (voteData && accountAddress) {
+      Cookies.set(`voteData-${ accountAddress }`, JSON.stringify(voteData));
+    } else if (accountAddress) {
+      Cookies.remove(`voteData-${ accountAddress }`);
     }
   };
 

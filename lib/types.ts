@@ -215,7 +215,7 @@ export type AccountContextType = AccountState & {
   setSelectedExtension: (extension: InjectedExtension | null) => void;
   setCurrentProxy: (proxy: string | null) => void;
   setCurrentNetwork: (network: string | null) => void;
-  setVoteData: (voteData: VoteData[] | null) => void;
+  setVoteData: (voteData: VoteData[] | null, accountAddress: string) => void;
   setAttestationBundle: (bundle: string | null) => void;
 };
 

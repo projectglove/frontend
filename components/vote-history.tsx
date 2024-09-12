@@ -7,6 +7,7 @@ import { getReferendaList, getVotesByPollIndex } from '@/lib/utils';
 import { useAccounts } from '@/lib/providers/account';
 import { GLOVE_URL, TEST_SUBSCAN_NETWORK } from '@/lib/consts';
 import { ExternalLinkIcon } from './referendum-list';
+import Cookies from 'js-cookie';
 
 const VoteHistory = () => {
   const { setOpenVoteHistory, openVoteHistory, setOpenVerifyVote } = useDialog();
@@ -40,6 +41,20 @@ const VoteHistory = () => {
       setVotedPollIndices(indexes);
     }
   }, [voteData]);
+
+  useEffect(() => {
+    const accountAddress = selectedAccount?.address;
+    if (accountAddress) {
+      const savedVoteData = Cookies.get(`voteData-${ accountAddress }`);
+      if (savedVoteData) {
+        const voteData: VoteData[] = JSON.parse(savedVoteData);
+        setSubscanVotes(voteData.reduce((acc, vote) => ({
+          ...acc,
+          [vote.pollIndex]: vote
+        }), {}));
+      }
+    }
+  }, [selectedAccount?.address]);
 
   useEffect(() => {
     if (!selectedAccount || !currentProxy) {
