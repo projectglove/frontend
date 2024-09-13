@@ -3,6 +3,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Input } from "@/components/ui/input";
 import { Conviction, PreferredDirection, VotingOptionsProps } from '@/lib/types';
 import { useDialog } from '@/lib/providers/dialog';
+import { TEST_TOKEN } from '@/lib/consts';
 
 export default function VotingOptions({ index, handleAmountChange, handleMultiplierChange, handlePreferredDirectionChange }: VotingOptionsProps) {
   const { amounts, multipliers, directions: preferredDirection } = useDialog();
@@ -24,7 +25,7 @@ export default function VotingOptions({ index, handleAmountChange, handleMultipl
       </div>
       <div>
         <span className="flex flex-row sm:flex-col md:flex-row gap-x-1 text-xs font-medium mb-1 text-emerald-500 truncate">
-          Amount <span className="text-gray-400 whitespace-normal ellipsis">(KSM)</span>
+          Amount <span className="text-gray-400 whitespace-normal ellipsis">({TEST_TOKEN})</span>
         </span>
         <Input
           type="number"

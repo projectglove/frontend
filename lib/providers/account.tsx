@@ -1,4 +1,4 @@
-import { useState, useContext, createContext, useEffect, useMemo } from 'react';
+import { useState, useContext, createContext, useEffect, useMemo, useCallback } from 'react';
 import { InjectedAccountWithMeta, InjectedExtension } from "@polkadot/extension-inject/types";
 import Cookies from 'js-cookie';
 import { useApi } from './api';
@@ -150,7 +150,7 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     setCurrentNetworkState(network);
   };
 
-  const setVoteData = (voteData: VoteData[] | null) => {
+  const setVoteData = useCallback((voteData: VoteData[] | null) => {
     setVoteDataState(voteData);
     const accountAddress = selectedAccount?.address;
     if (voteData && accountAddress) {
@@ -158,7 +158,7 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     } else if (accountAddress) {
       Cookies.remove(`voteData-${ accountAddress }`);
     }
-  };
+  }, [selectedAccount?.address]);
 
   const setAttestationBundle = (bundle: string | null) => {
     setAttestationBundleState(bundle);
@@ -182,7 +182,7 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     setVoteData,
     attestationBundle,
     setAttestationBundle
-  }), [accounts, extensions, selectedAccount, selectedExtension, currentProxy, gloveProxy, currentNetwork, voteData, attestationBundle]);
+  }), [accounts, extensions, selectedAccount, selectedExtension, currentProxy, gloveProxy, currentNetwork, voteData, attestationBundle, setVoteData]);
 
   return (
     <AccountContext.Provider value={providerValue}>
