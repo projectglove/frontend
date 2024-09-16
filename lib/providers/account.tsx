@@ -1,4 +1,4 @@
-import { useState, useContext, createContext, useEffect, useMemo } from 'react';
+import { useState, useContext, createContext, useEffect, useMemo, useCallback } from 'react';
 import { InjectedAccountWithMeta, InjectedExtension } from "@polkadot/extension-inject/types";
 import Cookies from 'js-cookie';
 import { useApi } from './api';
@@ -16,6 +16,7 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
   const [currentProxy, setCurrentProxyState] = useState<string | null>(null);
   const [currentNetwork, setCurrentNetworkState] = useState<string | null>(null);
   const [gloveProxy, setGloveProxyState] = useState<string | null>(null);
+  const [attestationBundle, setAttestationBundleState] = useState<string | null>(null);
   const [voteData, setVoteDataState] = useState<VoteData[] | null>(null);
   const api = useApi();
   const { openGloveProxy } = useDialog();
@@ -52,6 +53,10 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
 
           if ('network_name' in data && data.network_name) {
             setCurrentNetworkState(data.network_name);
+          }
+
+          if ('attestation_bundle' in data && data.attestation_bundle) {
+            setAttestationBundleState(data.attestation_bundle);
           }
         } catch (error) {
           if (process.env.NODE_ENV !== 'test') {
@@ -93,17 +98,21 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
   }, [api, gloveProxy, selectedAccount?.address, openGloveProxy]);
 
   useEffect(() => {
-    const savedVoteData = Cookies.get('voteData');
-    if (savedVoteData) {
-      const voteData: VoteData[] = JSON.parse(savedVoteData);
-      const relevantVoteData = voteData.filter((vote) => vote.address === selectedAccount?.address);
+    const accountAddress = selectedAccount?.address;
+    const savedVoteData = accountAddress ? Cookies.get(`voteData-${ accountAddress }`) : null;
+    let relevantVoteData: VoteData[] = [];
 
-      if (relevantVoteData.length > 0) {
-        setVoteDataState(relevantVoteData);
-        Cookies.set('voteData', JSON.stringify(relevantVoteData));
-      } else {
-        setVoteDataState([]);
-      }
+    if (savedVoteData) {
+      relevantVoteData = JSON.parse(savedVoteData);
+    } else {
+      relevantVoteData = [];
+    }
+
+    setVoteDataState(relevantVoteData);
+
+    // Update the cookie for the specific account address
+    if (accountAddress) {
+      Cookies.set(`voteData-${ accountAddress }`, JSON.stringify(relevantVoteData));
     }
   }, [selectedAccount?.address, currentProxy]);
 
@@ -141,13 +150,18 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     setCurrentNetworkState(network);
   };
 
-  const setVoteData = (voteData: VoteData[] | null) => {
+  const setVoteData = useCallback((voteData: VoteData[] | null) => {
     setVoteDataState(voteData);
-    if (voteData) {
-      Cookies.set('voteData', JSON.stringify(voteData));
-    } else {
-      Cookies.remove('voteData');
+    const accountAddress = selectedAccount?.address;
+    if (voteData && accountAddress) {
+      Cookies.set(`voteData-${ accountAddress }`, JSON.stringify(voteData));
+    } else if (accountAddress) {
+      Cookies.remove(`voteData-${ accountAddress }`);
     }
+  }, [selectedAccount?.address]);
+
+  const setAttestationBundle = (bundle: string | null) => {
+    setAttestationBundleState(bundle);
   };
 
   const providerValue = useMemo(() => ({
@@ -165,8 +179,10 @@ export const AccountProvider = ({ children }: { children: React.ReactNode; }) =>
     currentNetwork,
     setCurrentNetwork,
     voteData,
-    setVoteData
-  }), [accounts, extensions, selectedAccount, selectedExtension, currentProxy, gloveProxy, currentNetwork, voteData]);
+    setVoteData,
+    attestationBundle,
+    setAttestationBundle
+  }), [accounts, extensions, selectedAccount, selectedExtension, currentProxy, gloveProxy, currentNetwork, voteData, attestationBundle, setVoteData]);
 
   return (
     <AccountContext.Provider value={providerValue}>

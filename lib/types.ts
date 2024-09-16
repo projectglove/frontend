@@ -125,6 +125,7 @@ export interface DialogStateType {
   openLearnMore: boolean;
   openReferendumDialog: boolean;
   openVoteHistory: boolean;
+  openVerifyVote: boolean;
   referendum: ReferendumDialogProps | null;
   amounts: { [key: number]: number | string; };
   multipliers: { [key: number]: Conviction; };
@@ -140,6 +141,7 @@ export interface DialogActionType {
   setOpenLearnMore: (openLearnMore: boolean) => void;
   setOpenReferendumDialog: (openReferendumDialog: boolean) => void;
   setOpenVoteHistory: (openVoteHistory: boolean) => void;
+  setOpenVerifyVote: (openVerifyVote: boolean) => void;
   setReferendum: (referendum: ReferendumDialogProps | null) => void;
   setVotingOptions: (amounts: { [key: number]: number | string; }, multipliers: { [key: number]: Conviction; }, directions: { [key: number]: PreferredDirection; }, timeRemaining: { [key: number]: number; }) => void;
 }
@@ -203,6 +205,7 @@ export type AccountState = {
   gloveProxy: string | null;
   currentNetwork: string | null;
   voteData: VoteData[] | null;
+  attestationBundle: string | null;
 };
 
 export type AccountContextType = AccountState & {
@@ -212,7 +215,8 @@ export type AccountContextType = AccountState & {
   setSelectedExtension: (extension: InjectedExtension | null) => void;
   setCurrentProxy: (proxy: string | null) => void;
   setCurrentNetwork: (network: string | null) => void;
-  setVoteData: (voteData: VoteData[] | null) => void;
+  setVoteData: (voteData: VoteData[] | null, accountAddress: string) => void;
+  setAttestationBundle: (bundle: string | null) => void;
 };
 
 export enum WalletNameEnum {

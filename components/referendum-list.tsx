@@ -19,7 +19,6 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
   const [preferredDirection, setPreferredDirection] = useState<{ [key: number]: PreferredDirection; }>({});
   const [referenda, setReferenda] = useState<ReferendumData[]>([]);
   const [votedPollIndices, setVotedPollIndices] = useState<Set<number>>(new Set());
-  const [subscanVotes, setSubscanVotes] = useState<{ [pollIndex: number]: VoteData; }>({});
   const { setOpenReferendumDialog, setReferendum, setVotingOptions, setOpenGloveProxy, setOpenVoteHistory } = useDialog();
   const { currentNetwork, voteData, currentProxy, gloveProxy, selectedAccount } = useAccounts();
   const api = useApi();
@@ -45,68 +44,53 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
   }, [isTest]);
 
   useEffect(() => {
-    if (isTest) {
+    if (isTest || !voteData) {
       return;
     }
-    if (voteData) {
-      const newAmounts: { [key: number]: number | string; } = {};
-      const newMultipliers: { [key: number]: Conviction; } = {};
-      const newPreferredDirections: { [key: number]: PreferredDirection; } = {};
 
-      voteData.forEach(vote => {
-        newAmounts[vote.pollIndex] = vote.amount;
-        newMultipliers[vote.pollIndex] = vote.conviction;
-        newPreferredDirections[vote.pollIndex] = vote.direction;
-      });
+    const newAmounts: { [key: number]: number | string; } = {};
+    const newMultipliers: { [key: number]: Conviction; } = {};
+    const newPreferredDirections: { [key: number]: PreferredDirection; } = {};
+    const indexes = new Set<number>();
 
-      setAmounts(newAmounts);
-      setMultipliers(newMultipliers);
-      setPreferredDirection(newPreferredDirections);
-    }
+    voteData.forEach(vote => {
+      const { pollIndex, amount, conviction, direction } = vote;
+      newAmounts[pollIndex] = amount;
+      newMultipliers[pollIndex] = conviction;
+      newPreferredDirections[pollIndex] = direction;
+      indexes.add(pollIndex);
+    });
+
+    setAmounts(newAmounts);
+    setMultipliers(newMultipliers);
+    setPreferredDirection(newPreferredDirections);
+    setVotedPollIndices(indexes);
   }, [voteData, isTest]);
 
   useEffect(() => {
     if (isTest) {
       return;
     }
-    if (voteData) {
-      const indexes = new Set<number>();
-      voteData.forEach(vote => {
-        indexes.add(vote.pollIndex);
-      });
-      setVotedPollIndices(indexes);
-    }
-  }, [voteData, isTest]);
 
-  useEffect(() => {
-    if (isTest) {
-      return;
-    }
     const loadMixTimes = async () => {
       try {
-        const data = await Promise.all(Array.from(referenda).map(ref =>
-          fetch(`/api/poll`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ index: ref.referendum_index })
-          })
-        ));
+        const data = await Promise.all(referenda.map(ref => fetchPollData(ref.referendum_index)));
 
         if (data) {
           const currentTime = Math.floor(Date.now() / 1000);
           const timeData = await Promise.all(data.map(res => res.ok ? res.json() : { mixing_time: null, error: `${ res.status } (${ res.statusText })` }));
-          const indicesArray = Array.from(referenda).map(ref => ref.referendum_index);
-          const newTimeRemaining: { [key: number]: number; } = timeData.reduce((acc, curr, index) => {
+          const indicesArray = referenda.map(ref => ref.referendum_index);
+          const newTimeRemaining: { [key: number]: number; } = {};
+
+          timeData.forEach((curr, index) => {
             if (curr.mixing_time && 'timestamp' in curr.mixing_time) {
-              acc[indicesArray[index]] = curr.mixing_time.timestamp;
+              newTimeRemaining[indicesArray[index]] = curr.mixing_time.timestamp;
             }
             if (curr.mixing_time && 'block_number' in curr.mixing_time) {
               setBlockNumbers(prevBlockNumbers => ({ ...prevBlockNumbers, [indicesArray[index]]: curr.mixing_time.block_number }));
             }
-            return acc;
-          }, {});
+          });
+
           originalTimestamps.current = newTimeRemaining;
           setElapsedTime(newTimeRemaining);
         } else {
@@ -123,35 +107,6 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
 
     return () => clearInterval(intervalId);
   }, [referenda, isTest]);
-
-  // useEffect(() => {
-  //   if (isTest) {
-  //     return;
-  //   }
-  //   if (!selectedAccount || !currentProxy) {
-  //     return;
-  //   }
-
-  //   const loadVotes = async () => {
-  //     for (const pollIndex of Array.from(votedPollIndices)) {
-  //       const votes = await getVotesByPollIndex(currentProxy, selectedAccount.address, pollIndex);
-  //       if (votes) {
-  //         const mappedVote: VoteData = votes.filter((vote: SubscanVoteData) => vote.referendum_index === pollIndex)
-  //           .map((vote: SubscanVoteData) => ({
-  //             amount: vote.amount,
-  //             direction: vote.status,
-  //             pollIndex,
-  //             extrinsicHash: vote.extrinsic_index,
-  //             voteTime: vote.voting_time
-  //           }));
-  //         console.log('mappedVote', mappedVote);
-  //         setSubscanVotes(prevVotes => ({ ...prevVotes, [pollIndex]: mappedVote }));
-  //       }
-  //     }
-  //   };
-
-  //   loadVotes();
-  // }, [isTest, referenda, currentProxy, selectedAccount, votedPollIndices]);
 
   useEffect(() => {
     if (isTest) {
@@ -206,7 +161,6 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
   }, [filter, referenda, votedPollIndices, isTest]);
 
   const formatTimeRemaining = useMemo(() => (pollIndex: number) => {
-
     const currentTime = Math.floor(Date.now() / 1000);
     let timeInSeconds = currentTime - originalTimestamps.current[pollIndex];
 
@@ -272,6 +226,16 @@ export function ReferendumList({ isTest }: ComponentTestProps) {
     } else {
       setOpenGloveProxy(true);
     }
+  };
+
+  const fetchPollData = async (referendumIndex: number) => {
+    return fetch(`/api/poll`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ index: referendumIndex })
+    });
   };
 
   return (

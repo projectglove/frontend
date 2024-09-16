@@ -28,7 +28,7 @@ export const SnackbarProvider = ({ children }: { children: React.ReactNode; }) =
       if (messages.length > 0) {
         removeMessage(messages[0].id);
       }
-    }, 3000);
+    }, 2000);
     return () => clearInterval(interval);
   }, [messages]);
 

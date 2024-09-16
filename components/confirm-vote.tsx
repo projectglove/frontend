@@ -17,6 +17,8 @@ import { hexToU8a, u8aToHex } from '@polkadot/util';
 
 export default function ConfirmVote({ isTest, callbackTest }: ComponentTestProps) {
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
   const [inputError, setInputError] = useState<string[]>([]);
   const { openReferendumDialog, setOpenReferendumDialog, referendum, amounts, multipliers, directions: preferredDirection } = useDialog();
   const { addMessage } = useSnackbar();
@@ -56,6 +58,7 @@ export default function ConfirmVote({ isTest, callbackTest }: ComponentTestProps
     if (!referendum || !api || !selectedAccount || referendum.referendumNumber === 0) return;
 
     setLoading(true);
+    setIsSubmitting(true);
 
     const voteAmount = amounts[referendum.index];
     const voteMultiplier = multipliers[referendum.index];
@@ -130,7 +133,7 @@ export default function ConfirmVote({ isTest, callbackTest }: ComponentTestProps
       });
       console.log('response', response);
       if (response.status === 200) {
-        addMessage({ type: 'success', content: `Vote submitted successfully to mixer but it may take a while longer to finalize.`, title: '' });
+        addMessage({ type: 'success', content: `Vote acknowledged by the mixer but it may take a while longer to finalize.`, title: '' });
         setOpenReferendumDialog(false);
         const newVote = {
           address: accountAddress,
@@ -142,7 +145,7 @@ export default function ConfirmVote({ isTest, callbackTest }: ComponentTestProps
         };
         const updatedVoteData = voteData?.filter(vote => vote.pollIndex !== pollIndex) || [];
         updatedVoteData.push(newVote);
-        setVoteData(updatedVoteData);
+        setVoteData(updatedVoteData, accountAddress);
       } else {
         const result = await response.json();
         const errorMessage = result.message || 'Failed to submit vote: ' + response.status + ' ' + response.statusText;
@@ -153,6 +156,7 @@ export default function ConfirmVote({ isTest, callbackTest }: ComponentTestProps
       console.error(error);
     } finally {
       setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -161,6 +165,7 @@ export default function ConfirmVote({ isTest, callbackTest }: ComponentTestProps
     if (!referendum || !api || !selectedAccount || referendum.referendumNumber === 0) return;
 
     setLoading(true);
+    setIsRemoving(true);
 
     const pollIndex = referendum?.referendumNumber;
     const accountAddress = selectedAccount?.address;
@@ -221,7 +226,7 @@ export default function ConfirmVote({ isTest, callbackTest }: ComponentTestProps
         setOpenReferendumDialog(false);
         const updatedVoteData = voteData?.filter(vote => vote.pollIndex !== pollIndex);
         if (updatedVoteData) {
-          setVoteData(updatedVoteData);
+          setVoteData(updatedVoteData, accountAddress);
         }
       } else {
         const result = await response.json();
@@ -233,6 +238,7 @@ export default function ConfirmVote({ isTest, callbackTest }: ComponentTestProps
       console.error(error);
     } finally {
       setLoading(false);
+      setIsRemoving(false);
     }
   };
 
@@ -253,11 +259,11 @@ export default function ConfirmVote({ isTest, callbackTest }: ComponentTestProps
             <Button variant="ghost" className="px-4 py-2 rounded-md w-full" onClick={() => setOpenReferendumDialog(false)}>
               Cancel
             </Button>
-            <Button disabled={loading} variant="outline" className="px-4 py-2 rounded-md w-full" onClick={() => handleVoteRemoval()}>
+            <Button disabled={isRemoving || loading} variant="outline" className="px-4 py-2 rounded-md w-full" onClick={() => handleVoteRemoval()}>
               Remove Vote
             </Button>
-            <Button data-testid="add-vote-button" disabled={inputError.length > 0 || loading} variant="default" className="px-4 py-2 rounded-md w-full" onClick={() => handleVoteSubmission()}>
-              {loading ? 'Submitting...' : 'Add/Update Vote'}
+            <Button data-testid="add-vote-button" disabled={inputError.length > 0 || isSubmitting || loading} variant="default" className="px-4 py-2 rounded-md w-full" onClick={() => handleVoteSubmission()}>
+              {isSubmitting ? 'Processing...' : 'Add/Update Vote'}
             </Button>
           </DialogFooter>
         </div>
