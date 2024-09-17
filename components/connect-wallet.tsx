@@ -55,12 +55,13 @@ export default function ConnectWallet() {
 
   return (
     <div className="flex items-center justify-center">
-      {currentAddress ? <Button onClick={handleOpenChange} variant="outline" className="px-4 py-2 rounded-md">
+      {currentAddress ? <Button id="connected-accounts" onClick={handleOpenChange} variant="outline" className="px-4 py-2 rounded-md">
         <div className="flex items-center">
           {currentAddress && <Identicon value={currentAddress} size={32} theme="substrate" />}
           <span className="ml-2">{activeAccount?.meta?.name ?? ''}</span>
         </div>
       </Button> : <Button
+        id="connect-accounts"
         onClick={handleOpenChange}
         className="px-8 py-3 rounded-md text-md font-medium bg-primary/90 text-primary-foreground hover:bg-primary focus:outline-none focus:ring-2 focus:ring-primary/50 active:bg-primary/80 transition-colors sm:px-12">
         Connect Wallet

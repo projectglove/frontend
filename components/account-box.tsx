@@ -53,7 +53,7 @@ export default function AccountBox({ account }: AccountBoxParams) {
       <div className="mt-1" onClick={handleIdenticonClick}>
         <Identicon value={account?.address} size={32} theme="substrate" />
       </div>
-      <div onClick={handleSetAccount} className="cursor-glove">
+      <div id={account.address} onClick={handleSetAccount} className="cursor-glove">
         <div className="text-xs">{shorten(account?.meta.name ?? '')}</div>
         <div className="text-sm">{shorten(account?.address)}</div>
       </div>

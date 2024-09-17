@@ -36,8 +36,6 @@
     "components/__tests__/e2e/e2e.js",
   ],
   "exclude": [
-    "cypress.config.ts",
-    "cypress",
     "node_modules"
   ]
 }

@@ -12,7 +12,7 @@ import { ComponentTestProps } from '@/lib/types';
 
 const config = extensionConfig.supported || [];
 
-export default function Wallet({ wallet, isTest, callbackTest }: { wallet: InjectedExtension; } & ComponentTestProps) {
+export default function Wallet({ wallet, isTest, callbackTest, id }: { wallet: InjectedExtension; id: string; } & ComponentTestProps) {
   const { setAccounts, setSelectedExtension: setActiveWallet, selectedExtension: activeWallet } = useAccounts();
   const [iconSrc, setIconSrc] = useState<string>('');
 
@@ -42,7 +42,7 @@ export default function Wallet({ wallet, isTest, callbackTest }: { wallet: Injec
   };
 
   return (
-    <div data-testid={wallet.name} onClick={walletClickHandler} className={`p-3 flex flex-col items-center justify-center`}>
+    <div id={id} data-testid={id} onClick={walletClickHandler} className={`p-3 flex flex-col items-center justify-center`}>
       <div className="flex flex-col items-center justify-center cursor-glove opacity-60 hover:opacity-100">
         <div className='flex items-center justify-center'>
           {iconSrc && <Image width={45} height={45} src={iconSrc} alt='wallet icon' />}
