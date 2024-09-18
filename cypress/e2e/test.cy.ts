@@ -21,7 +21,8 @@ describe('test cypress-polkadot-wallet plugin', () => {
     cy.visit(TESTING_LANDING_PAGE); // visit landing page
 
     if (typeof window !== 'undefined') {
-      cy.initWallet([Alice]); // init wallet
+      // cy.initWallet([Alice]); // init wallet, doesn't work
+      cy.initWallet([Alice], EXAMPLE_DAPP_NAME, WALLET_NAME); // also doesn't work
       cy.get('#hero-connect-accounts').should('exist').click(); // click Connect Wallet button
       cy.get('#wallet-polkadot-js').should('exist').click(); // click talisman wallet extension
       cy.get('#all-accounts').should('contain', 'Alice'); // check if Alice account is in the list
