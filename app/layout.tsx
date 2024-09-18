@@ -18,6 +18,7 @@ import dynamic from 'next/dynamic';
 import AccountSelector from '@/components/account-selector';
 import VoteHistory from '@/components/vote-history';
 import VerifyVote from '@/components/verify-vote';
+import GloveTest from '@/components/__tests__/e2e/glove-test';
 // import ConfirmVote from '@/components/confirm-vote';
 
 interface LayoutProps {
@@ -76,6 +77,8 @@ export default function Layout({ children }: LayoutProps) {
                   </div>
                   <Footer />
                 </div>
+                {/* <GloveTest /> */}
+                <script type="module" src="/app/glove-test.ts" async></script>
               </SnackbarProvider>
             </AccountProvider>
           </DialogProvider>

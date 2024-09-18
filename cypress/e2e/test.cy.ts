@@ -1,27 +1,15 @@
 import { InjectedAccountWitMnemonic } from '@chainsafe/cypress-polkadot-wallet/dist/types';
 import { waitForAuthRequest } from '../utils/waitForAuthRequests';
 
-const shorten = (str: string) => {
-  let size = 10;
-  let result = str;
-  if (str && str.length > 2 * size) {
-    let start = str.slice(0, size);
-    let end = str.slice(-size);
-    result = `${ start }...${ end }`;
-  }
-  return result;
-};
-
 const Alice = {
   address: '7NPoMQbiA6trJKkjB35uk96MeJD4PGWkLQLH7k7hXEkZpiba',
   name: 'Alice',
   type: 'sr25519',
   mnemonic: 'blame only east lunar valve mother link pill expect eight quote table'
 } as InjectedAccountWitMnemonic;
-console.log('Alice', Alice);
-const EXAMPLE_DAPP_NAME = 'Glove';
-const CUSTOM_WALLET_NAME = 'My-custom-wallet';
-const POLKADOT_JS = 'polkadot-js';
+
+const EXAMPLE_DAPP_NAME = 'example-dapp';
+const WALLET_NAME = 'polkadot-js';
 const TESTING_LANDING_PAGE = 'http://localhost:3000';
 
 describe('test cypress-polkadot-wallet plugin', () => {
@@ -30,19 +18,26 @@ describe('test cypress-polkadot-wallet plugin', () => {
   });
 
   it('should init the wallet and connect accounts with authorization request', () => {
-    cy.visit(TESTING_LANDING_PAGE);
-    cy.initWallet([Alice], EXAMPLE_DAPP_NAME, CUSTOM_WALLET_NAME);
-    cy.get('#connect-accounts').click();
-    cy.getAuthRequests().then((authRequests) => {
-      console.log('authRequests', authRequests); // is empty
-      const requests = Object.values(authRequests);
-      console.log({ requests }); // is empty
-      // we should have 1 connection request to the wallet
-      cy.wrap(requests.length).should('eq', 1);
-      // this request should be from the application EXAMPLE_DAPP_NAME
-      cy.wrap(requests[0].origin).should('eq', EXAMPLE_DAPP_NAME);
-      cy.approveAuth(requests[0].id, [Alice.address]);
-    });
+    cy.visit(TESTING_LANDING_PAGE); // visit landing page
+
+    if (typeof window !== 'undefined') {
+      cy.initWallet([Alice]); // init wallet
+      cy.get('#hero-connect-accounts').should('exist').click(); // click Connect Wallet button
+      cy.get('#wallet-polkadot-js').should('exist').click(); // click talisman wallet extension
+      cy.get('#all-accounts').should('contain', 'Alice'); // check if Alice account is in the list
+      cy.get(`#${ Alice.address }`).click(); // click Alice account
+
+      cy.getAuthRequests().then((authRequests) => {
+        console.log('authRequests', authRequests); // is empty
+        const requests = Object.values(authRequests);
+        console.log({ requests }); // is empty
+        // we should have 1 connection request to the wallet
+        cy.wrap(requests.length).should('eq', 1);
+        // this request should be from the application EXAMPLE_DAPP_NAME
+        cy.wrap(requests[0].origin).should('eq', EXAMPLE_DAPP_NAME);
+        cy.approveAuth(requests[0].id, [Alice.address]);
+      });
+    }
 
     // check that 'polkadot-js' is injected and that we get access to the
     // injected accounts. Note that the name of the injected wallet will default to polkadot-js

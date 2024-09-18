@@ -42,7 +42,7 @@ export default function Wallet({ wallet, isTest, callbackTest, id }: { wallet: I
   };
 
   return (
-    <div id={id} data-testid={id} onClick={walletClickHandler} className={`p-3 flex flex-col items-center justify-center`}>
+    <div id={`wallet-${ id }`} data-testid={id} onClick={walletClickHandler} className={`p-3 flex flex-col items-center justify-center`}>
       <div className="flex flex-col items-center justify-center cursor-glove opacity-60 hover:opacity-100">
         <div className='flex items-center justify-center'>
           {iconSrc && <Image width={45} height={45} src={iconSrc} alt='wallet icon' />}
