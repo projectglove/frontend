@@ -1,9 +1,11 @@
 {
   "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
     "lib": [
       "dom",
       "dom.iterable",
-      "esnext"
+      "es2020"
     ],
     "allowJs": true,
     "skipLibCheck": true,
@@ -12,10 +14,15 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "types": [
+      "cypress",
+      "node"
+    ],
     "plugins": [
       {
         "name": "next"
@@ -33,11 +40,10 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "jest.config.js",
-    "components/__tests__/e2e/e2e.js",
+    "cypress.config.ts",
+    "app/glove-test.ts"
   ],
   "exclude": [
-    "cypress.config.ts",
-    "cypress",
     "node_modules"
   ]
 }
