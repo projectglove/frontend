@@ -20,7 +20,7 @@ const GloveTest = () => {
             setError('Connection rejected');
           } else {
             const allAccounts = await web3Accounts();
-            console.log('allAccounts', allAccounts);
+            console.log('web3Accounts', allAccounts);
             setAccounts(allAccounts);
           }
         } catch (err) {

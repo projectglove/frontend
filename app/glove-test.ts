@@ -7,15 +7,17 @@ import { APP_NAME } from '@/lib/consts';
 const ROCOCO_WS_PROVIDER = 'wss://rococo-rpc.polkadot.io';
 let injectedAccounts: InjectedAccountWithMeta[] = [];
 
-document
-  .querySelector<HTMLButtonElement>('#hero-connect-accounts')!
-  .addEventListener('click', async () => {
-    // returns an array of all the injected sources
-    // (this needs to be called first, before other requests)
-    const allInjected = await web3Enable('Glove');
-    const allAccounts = await web3Accounts();
-    console.log('yoyooyo', { allInjected, allAccounts });
-  });
+if (typeof window !== 'undefined') {
+  document
+    .querySelector<HTMLButtonElement>('#hero-connect-accounts')!
+    .addEventListener('click', async () => {
+      // returns an array of all the injected sources
+      // (this needs to be called first, before other requests)
+      const allInjected = await web3Enable('example-dapp');
+      const allAccounts = await web3Accounts();
+      console.log('glove-test', { allInjected, allAccounts });
+    });
+}
 
 // document.querySelector<HTMLButtonElement>('#send-tx')!.addEventListener('click', async () => {
 //   const provider = new WsProvider(ROCOCO_WS_PROVIDER);
