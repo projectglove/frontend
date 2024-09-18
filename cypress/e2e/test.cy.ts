@@ -15,19 +15,22 @@ const TESTING_LANDING_PAGE = 'http://localhost:3000';
 describe('test cypress-polkadot-wallet plugin', () => {
   it('should check if plugin is installed', () => {
     expect(cy).property('initWallet').to.be.a('function');
+    expect(cy).property('getAuthRequests').to.be.a('function');
+    expect(cy).property('approveAuth').to.be.a('function');
   });
 
   it('should init the wallet and connect accounts with authorization request', () => {
-    cy.visit(TESTING_LANDING_PAGE); // visit landing page
-
     if (typeof window !== 'undefined') {
+      cy.visit(TESTING_LANDING_PAGE); // visit landing page
+
       // cy.initWallet([Alice]); // init wallet, doesn't work
       cy.initWallet([Alice], EXAMPLE_DAPP_NAME, WALLET_NAME); // also doesn't work
       cy.get('#hero-connect-accounts').should('exist').click(); // click Connect Wallet button
-      cy.get('#wallet-polkadot-js').should('exist').click(); // click talisman wallet extension
+      cy.get('#wallet-polkadot-js').should('exist').click(); // click polkadot-js wallet extension
       cy.get('#all-accounts').should('contain', 'Alice'); // check if Alice account is in the list
       cy.get(`#${ Alice.address }`).click(); // click Alice account
 
+      // getAuthRequests always returns empty array
       cy.getAuthRequests().then((authRequests) => {
         console.log('authRequests', authRequests); // is empty
         const requests = Object.values(authRequests);

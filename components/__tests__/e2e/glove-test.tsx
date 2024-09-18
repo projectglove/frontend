@@ -12,6 +12,11 @@ const GloveTest = () => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const button = document.querySelector<HTMLButtonElement>('#hero-connect-accounts');
+      if (!button) {
+        console.error('Button #hero-connect-accounts not found');
+        return;
+      }
+
       const connectAccountsHandler = async () => {
         try {
           const allInjected = await web3Enable('example-dapp');
@@ -24,15 +29,15 @@ const GloveTest = () => {
             setAccounts(allAccounts);
           }
         } catch (err) {
+          console.error('An error occurred while connecting accounts', err);
           setError('An error occurred while connecting accounts');
         }
-        console.log('accounts', accounts);
       };
 
-      button?.addEventListener('click', connectAccountsHandler);
+      button.addEventListener('click', connectAccountsHandler);
 
       return () => {
-        button?.removeEventListener('click', connectAccountsHandler);
+        button.removeEventListener('click', connectAccountsHandler);
       };
     }
   }, []);

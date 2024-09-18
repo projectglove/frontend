@@ -40,7 +40,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "jest.config.js",
-    "cypress.config.ts"
+    "cypress.config.ts",
+    "app/glove-test.ts"
   ],
   "exclude": [
     "node_modules"

@@ -80,7 +80,7 @@ export default function Layout({ children }: LayoutProps) {
                 </div>
                 {/* TODO: cypress-polkadot-wallet does not work in our repo for somem reason */}
                 <GloveTest />
-                {/* <Script type="module" src="/app/glove-test.ts" defer></Script> */}
+                {/* <Script src="./app/glove-test.ts" defer></Script> */}
               </SnackbarProvider>
             </AccountProvider>
           </DialogProvider>
