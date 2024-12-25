@@ -11,7 +11,7 @@ yarn dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 
-## Deployment Guide to Kusama
+## Deployment Guide to Kusama and Polkadot
 
 Update the following `TEST_` constants to their `PROD_` equivalents for deployment to the Kusama network. This ensures proper connection to Kusama's services.
 
