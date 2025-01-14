@@ -18,6 +18,8 @@ import dynamic from 'next/dynamic';
 import AccountSelector from '@/components/account-selector';
 import VoteHistory from '@/components/vote-history';
 import VerifyVote from '@/components/verify-vote';
+import GloveTest from '@/components/__tests__/e2e/glove-test';
+import Script from 'next/script';
 // import ConfirmVote from '@/components/confirm-vote';
 
 interface LayoutProps {
@@ -76,6 +78,9 @@ export default function Layout({ children }: LayoutProps) {
                   </div>
                   <Footer />
                 </div>
+                {/* TODO: cypress-polkadot-wallet does not work in our repo for somem reason */}
+                <GloveTest />
+                {/* <Script src="./app/glove-test.ts" defer></Script> */}
               </SnackbarProvider>
             </AccountProvider>
           </DialogProvider>
