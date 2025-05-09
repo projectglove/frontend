@@ -12,7 +12,7 @@ export default function Login() {
             Glove is an open-source confidential voting solution for Kusama OpenGov.
           </p>
         </div>
-        <ConnectWallet />
+        <ConnectWallet id="hero-connect-accounts" />
       </div>
     </div>
   );

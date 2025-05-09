@@ -28,11 +28,11 @@ export default function Wallets({ defaultValue }: { defaultValue?: any; }) {
       <div className={`flex flex-row items-start justify-center gap-4 mb-3`}>
         {!!accountState && !!accountState.extensions && accountState.extensions.length > 0 && accountState.extensions.map((wallet: InjectedExtension) => (
           <div key={wallet.name} className={`${ accountState.selectedExtension?.name === wallet.name ? 'border-2 border-primary bg-primary/10 rounded-lg' : 'border-2 border-transparent' }`}>
-            <Wallet key={wallet.name} wallet={wallet} />
+            <Wallet key={wallet.name} wallet={wallet} id={wallet.name} />
           </div>
         ))}
       </div>
-      <div className="overflow-y-scroll max-h-[300px] relative border rounded-lg px-3 py-2 bg-black/20">
+      <div id="all-accounts" className="overflow-y-scroll max-h-[300px] relative border rounded-lg px-3 py-2 bg-black/20">
         {!!accountState && !!accountState.accounts && accountState.accounts.length > 0 ?
           accountState.accounts.map(({ address, meta }) => (
             <div ref={activeAccount && activeAccount.address === address ? activeAccountRef : null} key={address} className={`my-1 ${ activeAccount?.address === address ? 'border-2 border-accent bg-accent/20 rounded-lg' : 'border-2 border-transparent' }`}>
